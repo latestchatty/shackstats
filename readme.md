@@ -8,11 +8,18 @@ These files are generated daily and uploaded to `https://shackstats.com/data/`.
 
 ## `files.csv`
 1. `filename`
+
+## `file_hashes.csv`
+1. `filename`
 1. `sha256`
+1. `size`
 
 ## `users.csv`
 1. `user_id`
 1. `username`
+1. `first_post_id`
+1. `first_post_date`
+1. `post_count`
 
 ## `(daily|weekly|monthly|yearly)_post_counts.csv`
 1. `period`
