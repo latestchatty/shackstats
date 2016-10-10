@@ -26,7 +26,7 @@ import * as process from "process";
 import { Dictionary } from "./Dictionary";
 
 // set to 0 in production, increase to make things faster in development
-const MIN_POST_ID: number = 35517000;
+const MIN_POST_ID: number = 35510000;
 
 // =====
 
@@ -163,6 +163,7 @@ async function buildDataFiles(config: Config): Promise<void> {
         "SELECT TO_CHAR(MAX(date), 'YYYY-MM-DD') AS day FROM post")).day, "YYYY-MM-DD", true).add(1, "day");
     
     await buildUsersFile(config);
+    await buildPeriodicPostCountsFile(config);
     await buildFilesFile(config);
 }
 
@@ -195,6 +196,12 @@ async function buildFilesFile(config: Config): Promise<void> {
     ]);
 }
 
+// "date" is formatted using TO_CHAR(..., 'YYYY-MM-DD HH24:MI:SS')
+function postDateToUtc(date: string): string {
+    return moment.tz(date, "America/Chicago").tz("UTC").format();
+}
+
+// users.csv
 async function buildUsersFile(config: Config): Promise<void> {
     function isAlpha(str: string): boolean {
         return str.length === 1 && str.match(/[A-Za-z]/i) !== null;
@@ -211,15 +218,14 @@ async function buildUsersFile(config: Config): Promise<void> {
         return prefix;
     }
 
-    const rs: {userId?: string, username: string, first_post_id: any, first_post_date: string, post_count: any}[] =
-        await pgQuery(config.pg,
-            `SELECT MIN(author) AS username, MIN(id) AS first_post_id,
-                TO_CHAR(MIN(date), 'YYYY-MM-DD HH24:MI:SS') AS first_post_date, COUNT(*) AS post_count
-            FROM post
-            WHERE id > $1
-            GROUP BY author_c
-            ORDER BY MIN(id), author_c`,
-            [MIN_POST_ID]);
+    const rs = await pgQuery(config.pg,
+        `SELECT MIN(author) AS username, MIN(id) AS first_post_id,
+            TO_CHAR(MIN(date), 'YYYY-MM-DD HH24:MI:SS') AS first_post_date, COUNT(*) AS post_count
+        FROM post
+        WHERE id > $1
+        GROUP BY author_c
+        ORDER BY MIN(id), author_c`,
+        [MIN_POST_ID]);
     const seen = new Dictionary<string, string>(); // id -> username
     rs.forEach(x => {
         const prefix = getPrefix(x.username);
@@ -230,16 +236,93 @@ async function buildUsersFile(config: Config): Promise<void> {
             suffix++;
         }
         seen.add(userId, x.username);
-        x.userId = userId;
+        x.user_id = userId;
     });
-    console.info(rs);
     await writeCsvFile(config, "users.csv", rs, ["user_id", "username", "first_post_id", "first_post_date", "post_count"], [
-        x => x.userId,
+        x => x.user_id,
         x => x.username,
         x => parseInt(x.first_post_id),
-        x => moment.tz(x.first_post_date, "America/Chicago").tz("UTC").format(),
+        x => postDateToUtc(x.first_post_date),
         x => parseInt(x.post_count)
     ]);
+}
+
+// (daily|weekly|monthly|yearly)_post_counts.csv
+async function buildPeriodicPostCountsFile(config: Config): Promise<void> {
+    const periods = [["day", "daily"], ["week", "weekly"], ["month", "monthly"], ["year", "yearly"]];
+    for (var i = 0; i < periods.length; i++) { 
+        const periodNoun = periods[i][0];
+        const periodAdjective = periods[i][1];
+        const rs = await pgQuery(config.pg,
+            `SELECT
+                TO_CHAR(DATE_TRUNC('${periodNoun}', p.date), 'YYYY-MM-DD HH24:MI:SS') AS date,
+                p.category, COUNT(*) AS post_count
+            FROM post p
+            WHERE p.id > $1
+            GROUP BY DATE_TRUNC('${periodNoun}', p.date), p.category
+            ORDER BY DATE_TRUNC('${periodNoun}', p.date), p.category`,
+            [MIN_POST_ID]);
+
+        const rows: any[] = [];
+        var currentRow: any = { date: "" };
+        rs.forEach(x => {
+            if (x.date !== currentRow.date) {
+                if (currentRow.date != "") {
+                    rows.push(currentRow);
+                }
+                currentRow = {
+                    date: x.date,
+                    total_post_count: 0,
+                    ontopic_post_count: 0,
+                    nws_post_count: 0,
+                    stupid_post_count: 0,
+                    political_post_count: 0,
+                    tangent_post_count: 0,
+                    informative_post_count: 0,
+                };
+            }
+            switch (parseInt(x.category)) {
+                case 1:
+                    currentRow.total_post_count += (currentRow.ontopic_post_count = x.post_count);
+                    break;
+                case 2:
+                    currentRow.total_post_count += (currentRow.nws_post_count = x.post_count);
+                    break;
+                case 3:
+                    currentRow.total_post_count += (currentRow.stupid_post_count = x.post_count);
+                    break;
+                case 4:
+                    currentRow.total_post_count += (currentRow.political_post_count = x.post_count);
+                    break;
+                case 5:
+                    currentRow.total_post_count += (currentRow.tangent_post_count = x.post_count);
+                    break;
+                case 6:
+                    currentRow.total_post_count += (currentRow.informative_post_count = x.post_count);
+                    break;
+                default:
+                    throw new Error(`Unrecognized category: ${x.category}`);
+            }
+        });
+        if (currentRow.date != "") {
+            rows.push(currentRow);
+        }
+
+        await writeCsvFile(config, `${periodAdjective}_post_counts.csv`, rows,
+            ["period", "date", "total_post_count", "ontopic_post_count", "nws_post_count", "stupid_post_count",
+                "political_post_count", "tangent_post_count", "informative_post_count"],
+            [
+                x => periodNoun,
+                x => postDateToUtc(x.date),
+                x => parseInt(x.total_post_count),
+                x => parseInt(x.ontopic_post_count),
+                x => parseInt(x.nws_post_count),
+                x => parseInt(x.stupid_post_count),
+                x => parseInt(x.political_post_count),
+                x => parseInt(x.tangent_post_count),
+                x => parseInt(x.informative_post_count), 
+            ]);
+    }
 }
 
 // =====
