@@ -1,0 +1,72 @@
+* {
+    font-family: 'Trebuchet MS', 'Arial', 'Helvetica', sans-serif;    
+}
+body {
+    margin: 0 auto;
+    width: 1000px;
+    font-size: 11pt;
+}
+a, a:visited {
+    color: #0813B5;
+}
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+div.graph, div.options, div.datasetTitle {
+    border: 2px solid #E0E0E0;
+    padding: 20px;
+    width: 100%;
+}
+div.graph {
+    vertical-align: middle;
+    text-align: center;
+    height: 600px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+div.datasetTitle {
+    background: #E0E0E0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    font-size: 16pt;
+}
+div.options, div.datasetTitle {
+    border-bottom: 0;
+}
+input, select {
+    font-size: 11pt;
+    padding: 5px;
+    border: 1px solid #E0E0E0;
+    background: #FFFFFF;
+}
+input[type=text] {
+    padding: 6px;
+}
+div.option {
+    display: table-cell;
+    vertical-align: top;
+    padding-right: 15px;
+    line-height: 160%;
+}
+div.divider {
+    border-left: 2px solid #E0E0E0;
+}
+button {
+    min-width: 85px;
+    height: 26px;
+    font-size: 11pt;
+}
+div#datasetBox {
+    width: 180px;
+    overflow-y: auto;
+    height: 82px;
+    border: 1px solid #E0E0E0;
+    padding-left: 3px;
+    line-height: 130%;    
+}
+span.bullet {
+    color: #E0E0E0;
+}

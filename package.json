@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "name": "shackstats",
+  "version": "0.1.0",
+  "description": "Statistics for the Shacknews chatty forum",
+  "author": "Brian Luft",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf node_modules/ built/",
+    "prepublish": "tsc && cp -f node_modules/jquery/dist/jquery.min.js web/ext/ && cp -f node_modules/papaparse/papaparse.min.js web/ext/ && cp -f node_modules/chart.js/dist/Chart.min.js web/ext/ && cp -f node_modules/moment/min/moment.min.js web/ext/",
+    "build-site": "npm install && node ./built/buildSite.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electroly/shackstats.git"
+  },
+  "bugs": {
+    "url": "https://github.com/electroly/shackstats/issues"
+  },
+  "homepage": "https://shackstats.com",
+  "dependencies": {
+    "@types/lodash": "^4.14.37",
+    "@types/pg": "^6.1.33",
+    "chart.js": "^2.3.0",
+    "jquery": "^3.1.1",
+    "lodash": "^4.16.4",
+    "moment": "^2.15.1",
+    "papaparse": "^4.1.2",
+    "pg": "^6.1.0",
+    "typescript": "^2.0.3"
+  }
+}
