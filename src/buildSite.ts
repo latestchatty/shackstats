@@ -73,8 +73,8 @@ async function go(): Promise<void> {
 
     await pgConnect(config.pg);
     const userIdMap = await buildUsersFile(config);
-    await buildPostCountsFile(config);
     await buildUserPostCountsFiles(config, userIdMap);
+    await buildPostCountsFile(config);
     await buildPeriodUserPostCountsFiles(config, userIdMap);
     await buildPosterCountFiles(config);
     await buildNewPosterCountsFile(config, 0, "new_poster_counts");
