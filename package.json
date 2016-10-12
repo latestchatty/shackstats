@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf node_modules/ built/ web/data/*.csv web/ext/*.js",
-    "prepublish": "tsc && cp -f node_modules/jquery/dist/jquery.min.js web/ext/ && cp -f node_modules/papaparse/papaparse.min.js web/ext/ && cp -f node_modules/chart.js/dist/Chart.min.js web/ext/ && cp -f node_modules/moment/min/moment.min.js web/ext/ && cp -f node_modules/moment-timezone/builds/moment-timezone-with-data.min.js web/ext/",
+    "prepublish": "tsc && cp -f node_modules/jquery/dist/jquery.min.js web/ext/ && cp -f node_modules/papaparse/papaparse.min.js web/ext/ && cp -f node_modules/chart.js/dist/Chart.min.js web/ext/ && cp -f node_modules/moment/min/moment.min.js web/ext/",
     "build-site": "npm install && node ./built/buildSite.js"
   },
   "repository": {
@@ -20,10 +20,14 @@
   },
   "homepage": "https://shackstats.com",
   "dependencies": {
+    "@types/aws-sdk": "0.0.38",
+    "@types/babyparse": "0.0.30",
     "@types/glob": "^5.0.30",
     "@types/lodash": "^4.14.37",
     "@types/moment-timezone": "^0.2.32",
     "@types/pg": "^6.1.33",
+    "aws-sdk": "^2.6.7",
+    "babyparse": "^0.4.6",
     "chart.js": "^2.3.0",
     "glob": "^7.1.1",
     "jquery": "^3.1.1",

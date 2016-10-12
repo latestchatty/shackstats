@@ -17,6 +17,10 @@ These files are generated daily and uploaded to `https://shackstats.com/data/`.
 ## `users.csv`
 1. `user_id`
 1. `username`
+
+## `users_info.csv`
+1. `user_id`
+1. `username`
 1. `first_post_id`
 1. `first_post_date`
 1. `post_count`
@@ -44,7 +48,7 @@ These files are generated daily and uploaded to `https://shackstats.com/data/`.
 1. `tangent_post_count`
 1. `informative_post_count`
 
-## `post_counts_for_(day|week|month|year)_(YYYY[MM[DD]]).csv`
+## `post_counts_by_user_for_(day|week|month|year)_(YYYYMMDD).csv`
 1. `period`
 1. `date`
 1. `user_id`
