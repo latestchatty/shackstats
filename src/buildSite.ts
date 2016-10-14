@@ -585,7 +585,7 @@ async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Diction
 
                 const newPeriodDate = moment(dateStr).startOf(<any>period.noun).format("YYYY-MM-DD"); 
                 if (newPeriodDate !== period.date) {
-                    await writeDateFile(period.noun, period.rows.values(), period.date);
+                    await writeDateFile(period.noun, period.rows.keys().sort().map(x => period.rows.get(x)), period.date);
                     period.rows.clear();
                     period.date = newPeriodDate;
                 }
@@ -600,7 +600,7 @@ async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Diction
 
     for (let i = 0; i < currentPeriods.length; i++) {
         const period = currentPeriods[i];
-        await writeDateFile(period.noun, period.rows.values(), period.date);
+        await writeDateFile(period.noun, period.rows.keys().sort().map(x => period.rows.get(x)), period.date);
     }
 
     // for any days that we missed because there were no posts, create a blank file
