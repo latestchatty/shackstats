@@ -26,6 +26,7 @@ import * as path from "path";
 import * as pg from "pg";
 import * as process from "process";
 import { Dictionary } from "./Dictionary";
+const Cursor = require("pg-cursor"); // no typings
 
 // set to 0 in production, increase to make things faster in development
 const MIN_POST_ID: number = 0; //35500000;
@@ -51,6 +52,8 @@ interface Config {
 }
 
 async function go(): Promise<void> {
+    setInterval(() => console.log("Still alive..."), 30000);
+
     // these environment variables are used implicitly by the AWS SDK
     getEnv("AWS_ACCESS_KEY_ID");
     getEnv("AWS_SECRET_ACCESS_KEY");
@@ -73,9 +76,9 @@ async function go(): Promise<void> {
 
     await pgConnect(config.pg);
     const userIdMap = await buildUsersFile(config);
+    await buildPeriodUserPostCountsFiles(config, userIdMap);
     await buildUserPostCountsFiles(config, userIdMap);
     await buildPostCountsFile(config);
-    await buildPeriodUserPostCountsFiles(config, userIdMap);
     await buildPosterCountFiles(config);
     await buildNewPosterCountsFile(config, 0, "new_poster_counts");
     await buildNewPosterCountsFile(config, 10, "new_10plus_poster_counts");
@@ -119,6 +122,41 @@ async function pgQuerySingle(client: pg.Client, sql: string, values?: any[]): Pr
         throw new Error(`Expected one row, instead received ${rows.length} rows.`);
     }
     return rows[0];
+}
+
+async function pgQueryCursor<T>(config: Config, sql: string, values: any[], rowCallback: (row: T) => Promise<void>): Promise<void> {
+    console.info("=====");
+    console.info(sql);
+    if (typeof values !== "undefined") {
+        values.forEach((x, i) => {
+            console.info(`$${i+1} = ${x}`);
+        });
+    }
+    const startMsec = new Date().getTime();
+    const cursor = <any>config.pg.query(new Cursor(sql, values));
+    let count = 0;
+    while (true) {
+        const rows = await new Promise<T[]>((resolve, reject) => {
+            cursor.read(10000, (err: any, readRows: any[]) => {
+                console.log(`Cursor batch: ${readRows.length} rows`);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(readRows);
+                }
+            });
+        });
+        if (rows.length === 0) {
+            break;
+        }
+        count += rows.length;
+        for (let i = 0; i < rows.length; i++) {
+            await rowCallback(rows[i]);
+        }
+    }
+
+    const durationMsec = new Date().getTime() - startMsec;
+    console.info(`${count} row(s) returned in ${durationMsec} msec.`);
 }
 
 async function readFile(filePath: string): Promise<Buffer> {
@@ -331,41 +369,10 @@ async function buildPostCountsFile(config: Config): Promise<void> {
 
 // daily_post_counts_for_user_(user id).csv
 async function buildUserPostCountsFiles(config: Config, userIdMap: Dictionary<string, string>): Promise<void> {
-    const rs = await pgQuery(config.pg,
-        `SELECT
-            author_c, TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date,
-            p.category, COUNT(*) AS post_count
-        FROM post p
-        WHERE p.id > $1
-        GROUP BY author_c, DATE_TRUNC('day', p.date), p.category
-        ORDER BY author_c, DATE_TRUNC('day', p.date), p.category`,
-        [MIN_POST_ID]);
-    
-    const userDateGroups = _.groupBy(rs, x => `${x.date}_${x.author_c}`);
-    const rows = _.keys(userDateGroups).map(key => {
-        const groupRows = userDateGroups[key];
-        const dict = new Dictionary<number, number>(); // category -> count
-        groupRows.forEach(row => {
-            dict.set(parseInt(row.category), parseInt(row.post_count));
-        });
-        return {
-            date: groupRows[0].date,
-            user_id: userIdMap.get(groupRows[0].author_c),
-            total_post_count: dict.values().reduce((a,b) => a + b),
-            ontopic_post_count: dict.lookup(1, 0),
-            nws_post_count: dict.lookup(2, 0),
-            stupid_post_count: dict.lookup(3, 0),
-            political_post_count: dict.lookup(4, 0),
-            tangent_post_count: dict.lookup(5, 0),
-            informative_post_count: dict.lookup(6, 0),
-        };
-    });
-
-    const rowsByUser = _.groupBy(rows, x => x.user_id);
-    const userIds = _.keys(rowsByUser);
-    for (var j = 0; j < userIds.length; j++) {
-        const userId = userIds[j];
-        const userRows = rowsByUser[userId];
+    async function writeUserFile(userRows: any[], userId: string): Promise<void> {
+        if (userId === "") {
+            return;
+        }
 
         // fill in missing days
         const rowsByDate = Dictionary.fromArray(userRows, x => x.date, x => x);
@@ -404,6 +411,59 @@ async function buildUserPostCountsFiles(config: Config, userIdMap: Dictionary<st
                 x => x.informative_post_count, 
             ]);
     }
+    
+    let currentUserRows = new Dictionary<string, any>(); // date -> row
+    let currentUserId = "";
+    await pgQueryCursor(config,
+        `SELECT
+            author_c, TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date,
+            p.category, COUNT(*) AS post_count
+        FROM post p
+        WHERE p.id > $1
+        GROUP BY author_c, DATE_TRUNC('day', p.date), p.category
+        ORDER BY author_c, DATE_TRUNC('day', p.date), p.category`,
+        [MIN_POST_ID],
+        async (row: { author_c: any, date: any, category: any, post_count: any }) => {
+            const userId = userIdMap.get(row.author_c);
+            if (userId !== currentUserId) {
+                await writeUserFile(currentUserRows.values(), currentUserId);
+                currentUserRows.clear();
+                currentUserId = userId;
+            }
+
+            let csvRow = currentUserRows.lookup(row.date, null);
+            if (csvRow === null) {
+                csvRow = {
+                    date: row.date,
+                    user_id: userId,
+                    total_post_count: 0,
+                    ontopic_post_count: 0,
+                    nws_post_count: 0,
+                    stupid_post_count: 0,
+                    political_post_count: 0,
+                    tangent_post_count: 0,
+                    informative_post_count: 0,
+                };
+                currentUserRows.set(row.date, csvRow);
+            }
+            tallyByCategory(row, csvRow);
+        }
+    );
+
+    await writeUserFile(currentUserRows.values(), currentUserId);
+}
+
+function tallyByCategory(row: any, csvRow: any): void {
+    const count = parseInt(row.post_count);
+    switch (row.category) {
+        case 1: csvRow.ontopic_post_count += count; break;
+        case 2: csvRow.nws_post_count += count; break;
+        case 3: csvRow.stupid_post_count += count; break;
+        case 4: csvRow.political_post_count += count; break;
+        case 5: csvRow.tangent_post_count += count; break;
+        case 6: csvRow.informative_post_count += count; break;
+    }
+    csvRow.total_post_count += count;
 }
 
 function getAllDays(startDate: string, endDate: string): string[] { // "YYYY-MM-DD""
@@ -460,63 +520,87 @@ function getAllPeriods(): { noun: string, filenameSuffix: string, date: string }
 
 // post_counts_by_user_for_(day|week|month|year)_(YYYYMMDD).csv
 async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Dictionary<string, string>): Promise<void> {
-    const rs = await pgQuery(config.pg,
-        `SELECT author_c, TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date, p.category, COUNT(*) AS post_count
+    const filenames = new Dictionary<string, boolean>();
+
+    async function writeDateFile(periodNoun: string, dateRows: any[], date: string): Promise<void> {
+        if (date === "") {
+            return;
+        }
+
+        const filename = `post_counts_by_user_for_${periodNoun}_${moment(date).format("YYYYMMDD")}.csv`;
+        filenames.add(filename, true);
+        await writeCsvFile(config, filename, dateRows,
+            ["period", "date", "user_id", "total_post_count", "ontopic_post_count", "nws_post_count",
+                "stupid_post_count", "political_post_count", "tangent_post_count", "informative_post_count"],
+            [
+                x => periodNoun,
+                x => x.date,
+                x => x.user_id,
+                x => x.total_post_count,
+                x => x.ontopic_post_count,
+                x => x.nws_post_count,
+                x => x.stupid_post_count,
+                x => x.political_post_count,
+                x => x.tangent_post_count,
+                x => x.informative_post_count, 
+            ]);
+    }
+
+    function newRow(date: string, userId: string): any {
+        return {
+            date: date,
+            user_id: userId,
+            total_post_count: 0,
+            ontopic_post_count: 0,
+            nws_post_count: 0,
+            stupid_post_count: 0,
+            political_post_count: 0,
+            tangent_post_count: 0,
+            informative_post_count: 0,
+        };
+    }
+
+    let currentPeriods = [
+        { rows: new Dictionary<string, any>(), date: "", noun: "day" },
+        { rows: new Dictionary<string, any>(), date: "", noun: "week" },
+        { rows: new Dictionary<string, any>(), date: "", noun: "month" },
+        { rows: new Dictionary<string, any>(), date: "", noun: "year" }
+    ];
+
+    await pgQueryCursor(config,
+        `SELECT
+            author_c, TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date,
+            p.category, COUNT(*) AS post_count
         FROM post p
         WHERE p.id > $1
         GROUP BY DATE_TRUNC('day', p.date), author_c, p.category
         ORDER BY DATE_TRUNC('day', p.date), author_c, p.category`,
-        [MIN_POST_ID]);
+        [MIN_POST_ID],
+        async (row: { author_c: any, date: any, category: any, post_count: any }) => {
+            const userId = userIdMap.get(row.author_c);
+            const dateStr = row.date.toString();
 
-    const filenames = new Dictionary<string, boolean>();
-    for (var i = 0; i < PERIODS.length; i++) {
-        const periodNoun = <"day"|"week"|"month"|"year">PERIODS[i][0];
-        const periodAdjective = PERIODS[i][1]; 
-        
-        const userDateGroups = _.groupBy(rs, x => `${x.date}_${x.author_c}`);
-        const rows = _.keys(userDateGroups).map(key => {
-            const groupRows = userDateGroups[key];
-            const dict = new Dictionary<number, number>(); // category -> count
-            groupRows.forEach(row => {
-                dict.set(parseInt(row.category), parseInt(row.post_count));
-            });
-            return {
-                date: groupRows[0].date,
-                user_id: userIdMap.get(groupRows[0].author_c),
-                total_post_count: dict.values().reduce((a,b) => a + b),
-                ontopic_post_count: dict.lookup(1, 0),
-                nws_post_count: dict.lookup(2, 0),
-                stupid_post_count: dict.lookup(3, 0),
-                political_post_count: dict.lookup(4, 0),
-                tangent_post_count: dict.lookup(5, 0),
-                informative_post_count: dict.lookup(6, 0),
-            };
+            for (let i = 0; i < currentPeriods.length; i++) {
+                const period = currentPeriods[i];
+
+                const newPeriodDate = moment(dateStr).startOf(<any>period.noun).format("YYYY-MM-DD"); 
+                if (newPeriodDate !== period.date) {
+                    await writeDateFile(period.noun, period.rows.values(), period.date);
+                    period.rows.clear();
+                    period.date = newPeriodDate;
+                }
+                let csvRow = period.rows.lookup(userId, null);
+                if (csvRow === null) {
+                    csvRow = newRow(newPeriodDate, userId);
+                    period.rows.set(userId, csvRow);
+                } 
+                tallyByCategory(row, csvRow);
+            }
         });
-        
-        const rowsByDate = _.groupBy(rows, x => x.date);
-        const dates = _.keys(rowsByDate);
-        for (var j = 0; j < dates.length; j++) {
-            const date = dates[j];
-            const m = moment(date, "YYYY-MM-DD");
-            const dateRows = rowsByDate[date];
-            const filename = `post_counts_by_user_for_${periodNoun}_${m.format("YYYYMMDD")}.csv`;
-            filenames.add(filename, true);
-            await writeCsvFile(config, filename, dateRows,
-                ["period", "date", "user_id", "total_post_count", "ontopic_post_count", "nws_post_count",
-                    "stupid_post_count", "political_post_count", "tangent_post_count", "informative_post_count"],
-                [
-                    x => periodNoun,
-                    x => x.date,
-                    x => x.user_id,
-                    x => x.total_post_count,
-                    x => x.ontopic_post_count,
-                    x => x.nws_post_count,
-                    x => x.stupid_post_count,
-                    x => x.political_post_count,
-                    x => x.tangent_post_count,
-                    x => x.informative_post_count, 
-                ]);
-        }
+
+    for (let i = 0; i < currentPeriods.length; i++) {
+        const period = currentPeriods[i];
+        await writeDateFile(period.noun, period.rows.values(), period.date);
     }
 
     // for any days that we missed because there were no posts, create a blank file
