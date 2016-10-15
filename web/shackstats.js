@@ -87,14 +87,24 @@ function parseDisplay(x) {
 
 function downloadCsv(filename) { // Promise<any[]>
     return new Promise(function(resolve, reject) {
-        Papa.parse(dataRoot + filename, {
-            download: true,
-            header: true,
-            error: function(err) {
-                reject(err.toString());
+        $("div#footer").append($("<span class=\"download\"><a href=\"" + dataRoot + filename + "\">" +
+            "<i class=\"fa fa-file-text-o\" aria-hidden=\"true\"></i>" + filename + "</a></span>"));
+
+        $.ajax({
+            url: dataRoot + filename,
+            success: function(data) {
+                Papa.parse(data, {
+                    header: true,
+                    error: function(err) {
+                        reject(err.toString());
+                    },
+                    complete: function(results) {
+                        resolve(results.data);
+                    }
+                });
             },
-            complete: function(results) {
-                resolve(results.data);
+            error: function(jqXHR, textStatus, errorThrown) {
+                reject(textStatus.toString());
             }
         });
     });
@@ -113,6 +123,18 @@ function resolveP(value) {
 function rejectP(message) {
     return new Promise(function(resolve, reject) {
         reject(message);
+    });
+}
+
+function filterPointsByDateRange(options, points) {
+    return _.filter(points, function(point) {
+        if (options.startDate !== null && point.x < options.startDate) {
+            return false;
+        } else if (options.endDate !== null && point.x > options.endDate) {
+            return false;
+        } else {
+            return true;
+        }
     });
 }
 
@@ -183,23 +205,14 @@ $(document).ready(function() {
                     var totalCount = _.reduce(counts, function(a, b) { return a + b; }, 0);
                     return { x: moment(date).toDate(), y: totalCount };
                 });
-                var filteredPoints = _.filter(points, function(point) {
-                    if (options.startDate !== null && point.x < options.startDate) {
-                        return false;
-                    } else if (options.endDate !== null && point.x > options.endDate) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                });
                 var title = groupAdjectives[options.groupBy] + " posts"
                     + (options.author !== null ? " by \"" + usernameDict[userIdDict[options.author.toLowerCase()]] + "\"" : "")
                     + (options.category !== null ? " flagged \"" + options.category + "\"" : "");
                 return resolveP({
                     chartTitle: title,
                     xAxisLabel: "Date",
-                    yAxisLabel: "Post Count",
-                    values: filteredPoints
+                    yAxisLabel: "Number of Posts",
+                    values: filterPointsByDateRange(options, points)
                 });
             }
         },
@@ -212,7 +225,27 @@ $(document).ready(function() {
                 "div#startDateOption",
                 "div#endDateOption",
             ],
-            defaultDisplay: options.groupBy === "day" ? "scatter" : "line"
+            defaultDisplay: options.groupBy === "day" ? "scatter" : "line",
+            getCsvFilename: function() {
+                switch (options.groupBy) {
+                    case "day": return resolveP("daily_poster_counts.csv");
+                    case "week": return resolveP("weekly_poster_counts.csv");
+                    case "month": return resolveP("monthly_poster_counts.csv");
+                    case "year": return resolveP("yearly_poster_counts.csv");
+                    default: return rejectP("Unrecognized grouping.");
+                }
+            },
+            generateChartInfo: function(csvData) {
+                var points = _.map(csvData, function(row) {
+                    return { x: moment(row.date).toDate(), y: parseInt(row.poster_count) };
+                });
+                return resolveP({
+                    chartTitle: groupAdjectives[options.groupBy] + " active users",
+                    xAxisLabel: "Date",
+                    yAxisLabel: "Number of Active Users",
+                    values: filterPointsByDateRange(options, points)
+                });
+            }
         },
         {
             name: "newUsers",
@@ -270,6 +303,8 @@ $(document).ready(function() {
             return dataset.getCsvFilename();
         })
         .then(function(csvFilename) {
+            $("code#csvFilename").text(csvFilename);
+            $("a#csvLink").attr("href", dataRoot + csvFilename).css("visibility", "visible");
             return downloadCsv(csvFilename);
         })
         .then(function(csvData) {

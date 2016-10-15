@@ -9,7 +9,8 @@
   "scripts": {
     "clean": "rm -rf node_modules/ built/ web/ext/*.js && (find web/data/ -name \"*.csv\" -print0 | xargs -0 rm)",
     "prepublish": "bash prepublish.sh",
-    "build-site": "npm install && node ./built/buildSite.js"
+    "build-site": "npm install && node ./built/buildSite.js",
+    "upload-site": "npm install && node ./built/uploadSite.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "chart.js": "^2.3.0",
     "datatables.net": "^1.10.12",
     "datatables.net-dt": "^1.10.12",
+    "font-awesome": "^4.6.3",
     "glob": "^7.1.1",
     "jquery": "^3.1.1",
     "lodash": "^4.16.4",

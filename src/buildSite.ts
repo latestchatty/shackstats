@@ -32,7 +32,7 @@ const Cursor = require("pg-cursor"); // no typings
 const MIN_POST_ID: number = 0; //35500000;
 
 // set to true in production, false to skip uploading to S3
-const DO_UPLOAD: boolean = true;
+const DO_UPLOAD: boolean = true; //false;
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -639,12 +639,11 @@ async function buildPosterCountFiles(config: Config): Promise<void> {
 
         // fill in missing dates
         const rowsByDate = Dictionary.fromArray(rs, x => x.date, x => x);
-        const expandedRows = getAllPeriods().filter(x => x.date == periodNoun).map(x => x.date).map(date => {
+        const expandedRows = getAllPeriods().filter(x => x.noun == periodNoun).map(x => x.date).map(date => {
             if (rowsByDate.containsKey(date)) {
                 return rowsByDate.get(date);
             } else {
                 return {
-                    period: periodNoun,
                     date: date,
                     poster_count: 0
                 };
@@ -733,7 +732,9 @@ async function uploadFiles(config: Config): Promise<void> {
                 Body: contents,
                 Bucket: "shackstats.com",
                 Key: `data/${filename}`,
-                ACL: "public-read"
+                ACL: "public-read",
+                ContentType: "text/plain",
+                ContentDisposition: "inline"
             }, {}, (err, data) => {
                 if (err) {
                     reject(err);

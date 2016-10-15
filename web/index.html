@@ -5,14 +5,15 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>ShackStats</title>
         <link rel="stylesheet" href="ext/jquery.dataTables.css">
+        <link rel="stylesheet" href="ext/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h1>ShackStats</h1>
-
-        <h3 style="font-weight: normal; line-height: 150%;">
-            View:&nbsp;&nbsp;<span id="datasetLinks"></span>
+        <h3 style="font-weight: normal; line-height: 150%; float: right;">
+            <span id="datasetLinks"></span>
         </h3>
+
+        <h1><i class="fa fa-area-chart" aria-hidden="true"></i> ShackStats</h1>
 
         <div id="datasetTitle">
             &nbsp;
@@ -73,15 +74,19 @@
             </div>
         </form>
 
-        <div class="graphContainer">
+        <div id="graphContainer">
             <div id="loading">Loading...</div>
             <div id="datatableTitle" style="display:  none;"></div>
             <table id="datatable"></table>
             <canvas id="graph" style="display: none;"></canvas>
         </div>
 
-        <p style="margin-top: 40px;">
-            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">View GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Download CSV data files</a>
+        <div id="footer">
+            Source data:&nbsp;&nbsp;
+        </div>
+
+        <p style="margin-top: 40px; text-align: right;">
+            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Data file formats</a>
         </p>
 
         <script src="ext/jquery.min.js"></script>
