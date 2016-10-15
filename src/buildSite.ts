@@ -307,7 +307,7 @@ async function buildPostCountsFile(config: Config): Promise<void> {
             TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date,
             p.category, COUNT(*) AS post_count
         FROM post p
-        WHERE p.id > $1
+        WHERE p.id > $1 AND p.date >= '1999-06-01'
         GROUP BY DATE_TRUNC('day', p.date), p.category
         ORDER BY DATE_TRUNC('day', p.date), p.category`,
         [MIN_POST_ID]);
@@ -419,7 +419,7 @@ async function buildUserPostCountsFiles(config: Config, userIdMap: Dictionary<st
             author_c, TO_CHAR(DATE_TRUNC('day', p.date), 'YYYY-MM-DD') AS date,
             p.category, COUNT(*) AS post_count
         FROM post p
-        WHERE p.id > $1
+        WHERE p.id > $1 AND p.date >= '1999-06-01'
         GROUP BY author_c, DATE_TRUNC('day', p.date), p.category
         ORDER BY author_c, DATE_TRUNC('day', p.date), p.category`,
         [MIN_POST_ID],
@@ -682,7 +682,7 @@ async function buildNewPosterCountsFile(config: Config, minPosts: number, filena
         const periodAdjective = PERIODS[i][1];
         
         const groups = _.groupBy(users, x => x.firstPostDate.clone().startOf(periodNoun).format("YYYY-MM-DD"));
-        const rows = allPeriods.filter(x => x.noun == periodNoun).map(x => x.date).map(date => ({
+        const rows = allPeriods.filter(x => x.noun === periodNoun).map(x => x.date).map(date => ({
             date: date, new_poster_count: groups.hasOwnProperty(date) ? groups[date].length : 0 
         }));
 
@@ -722,6 +722,8 @@ async function uploadFiles(config: Config): Promise<void> {
         }
     });
     const filenames = newFilesToUpload.keys();
+    filenames.push("files.csv");
+    filenames.push("file_hashes.csv");
     for (var i = 0; i < filenames.length; i++) {
         const filename = filenames[i];
         console.log(`Uploading "${filename}"`);

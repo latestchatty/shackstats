@@ -3,156 +3,94 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="description" content="Statistics for the Shacknews chatty forum.">
-        <title>Shack Stats</title>
+        <title>ShackStats</title>
+        <link rel="stylesheet" href="ext/jquery.dataTables.css">
         <link rel="stylesheet" href="shackstats.css">
-        <script src="ext/jquery.min.js"></script>
-        <script src="ext/papaparse.min.js"></script>
-        <script src="ext/moment.min.js"></script>
-        <script src="ext/Chart.min.js"></script>
     </head>
     <body>
         <h1>ShackStats</h1>
 
         <h3 style="font-weight: normal; line-height: 150%;">
-            Lists:
-            <a href="?dataset=topPosters">Top Posters</a> <span class="bullet">&bull;</span> 
-            <a href="?dataset=topPosters">Top Thread Starters</a>
-            <br>
-            Graphs:
-            <a href="?dataset=totalPosts">Posts</a> <span class="bullet">&bull;</span> 
-            <a href="?dataset=activeUsers">Active Users</a> <span class="bullet">&bull;</span> 
-            <a href="?dataset=newUsers">New Users</a> <span class="bullet">&bull;</span> 
-            <a href="?dataset=newUsersWithTenPosts">New Users with 10+ Posts</a>
+            View:&nbsp;&nbsp;<span id="datasetLinks"></span>
         </h3>
 
-        <div class="datasetTitle">
-            Posts
+        <div id="datasetTitle">
+            &nbsp;
         </div>
 
         <form method="GET" action="">
-            <div class="options">
-                <div class="option">
-                    Grouping:<br>
-                    <select id="groupCmb" name="group">
-                        <option value="day">Day</option>
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                        <option value="year">Year</option>
-                    </select>
-                </div>
-                <div class="option">
-                    Start date:<br>
-                    <input id="startDateTxt" type="text" style="width: 90px;" name="startDate">
-                </div>
-                <div class="option">
-                    End date:<br>
-                    <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
-                </div>
-                <div class="option divider"></div>
-                <div class="option">
-                    Author:<br>
-                    <input id="authorTxt" type="text" style="width: 150px;" name="author">
-                </div>
-                <div class="option">
-                    Moderation flag:<br>
-                    <select id="categoryCmb" name="category">
-                        <option value="">&nbsp;</option>
-                        <option value="on-topic">On-topic</option>
-                        <option value="not work safe">Not work safe</option>
-                        <option value="stupid">Stupid</option>
-                        <option value="political/religious">Political/religious</option>
-                        <option value="tangent">Tangent</option>
-                        <option value="informative">Informative</option>
-                    </select>
-                </div>
-                <div class="option divider"></div>
-                <div class="option">
-                    Display as:<br>
-                    <select id="displayCmb" name="display">
-                        <option value="scatter">Scatter plot</option>
-                        <option value="line">Line graph</option>
-                        <option value="table">Data table</option>
-                    </select>
-                </div>
-                <div class="option divider"></div>
-                <div class="option" style="vertical-align: bottom;">
-                    <button style="height: 50px;">View</button>
+            <input type="hidden" name="dataset" id="datasetField">
+            <div id="options">
+                <div id="optionsContainer">
+                    <div class="option" id="groupOption">
+                        Group by:<br>
+                        <select id="groupCmb" name="group">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </div>
+                    <div class="option" id="startDateOption">
+                        Start date:<br>
+                        <input id="startDateTxt" type="text" style="width: 90px;" name="startDate">
+                    </div>
+                    <div class="option" id="endDateOption">
+                        End date:<br>
+                        <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
+                    </div>
+                    <div class="option divider" id="authorDivider"></div>
+                    <div class="option" id="authorOption">
+                        Author:<br>
+                        <input id="authorTxt" type="text" style="width: 150px;" name="author">
+                    </div>
+                    <div class="option" id="categoryOption">
+                        Moderation flag:<br>
+                        <select id="categoryCmb" name="category">
+                            <option value="">&nbsp;</option>
+                            <option value="ontopic">On-topic</option>
+                            <option value="nws">Not work safe</option>
+                            <option value="stupid">Stupid</option>
+                            <option value="political">Political/religious</option>
+                            <option value="tangent">Tangent</option>
+                            <option value="informative">Informative</option>
+                        </select>
+                    </div>
+                    <div class="option divider alwaysShown" id="displayDivider"></div>
+                    <div class="option alwaysShown">
+                        Display as:<br>
+                        <select id="displayCmb" name="display">
+                            <option value="scatter" id="scatterChoice">Scatter plot</option>
+                            <option value="line" id="lineChoice">Line graph</option>
+                            <option value="table">Data table</option>
+                        </select>
+                    </div>
+                    <div class="option divider alwaysShown"></div>
+                    <div class="option alwaysShown" style="vertical-align: bottom;">
+                        <button style="height: 50px;">View</button>
+                    </div>
                 </div>
             </div>
         </form>
 
-        <div class="graph">
+        <div class="graphContainer">
             <div id="loading">Loading...</div>
+            <div id="datatableTitle" style="display:  none;"></div>
+            <table id="datatable"></table>
             <canvas id="graph" style="display: none;"></canvas>
         </div>
 
         <p style="margin-top: 40px;">
-            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>.  <a href="https://github.com/electroly/shackstats">View on GitHub</a>.
+            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">View GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Download CSV data files</a>
         </p>
 
-        <script>
-            var urlRoot = "https://shackstats.com/";
-
-            Papa.parse(urlRoot + "data/daily-post-counts.csv", {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    var ctx = $("canvas#graph");
-                    var data = results.data.map(function(x) {
-                        return {
-                            x: moment(x.day, "YYYY-MM-DD", true).toDate(),
-                            y: parseInt(x.count)
-                        };
-                    });
-                    var chart = new Chart(ctx, {
-                        type: "line",
-                        data: {
-                            datasets: [{
-                                label: "Post count",
-                                data: data
-                            }] 
-                        },
-                        options: {
-                            showLines: false,
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            legend: {
-                                display: false,
-                            },
-                            animation: {
-                                duration: 0
-                            },
-                            hover: {
-                                animationDuration: 0
-                            },
-                            scales: {
-                                xAxes: [{
-                                    type: "time",
-                                    position: "bottom",
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: "Day"
-                                    }
-                                }],
-                                yAxes: [{
-                                    type: "linear",
-                                    position: "left",
-                                    ticks: {
-                                        beginAtZero: true
-                                    },
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: "Number of posts"
-                                    }
-                                }]
-                            }
-                        }
-                    });
-                    $("div#loading").css("display", "none");
-                    $("canvas#graph").css("display", "block");
-                }
-            });
-        </script>
+        <script src="ext/jquery.min.js"></script>
+        <script src="ext/jquery.dataTables.js"></script>
+        <script src="ext/papaparse.min.js"></script>
+        <script src="ext/moment.min.js"></script>
+        <script src="ext/Chart.min.js"></script>
+        <script src="ext/bluebird.min.js"></script>
+        <script src="ext/lodash.min.js"></script>
+        <script src="shackstats.js"></script>
     </body>
 </html>

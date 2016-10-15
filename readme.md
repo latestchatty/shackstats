@@ -16,11 +16,11 @@ These files are generated daily and uploaded to `https://shackstats.com/data/`.
 
 ## `users.csv`
 1. `user_id` (PK)
-1. `username`
+1. `username` (unique)
 
 ## `users_info.csv`
 1. `user_id` (PK)
-1. `username`
+1. `username` (unique)
 1. `first_post_id`
 1. `first_post_date`
 1. `post_count`

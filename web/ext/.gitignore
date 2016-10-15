@@ -1,4 +1,8 @@
 jquery.min.js
+jquery.dataTables.css
+jquery.dataTables.js
 papaparse.min.js
 Chart.min.js
 moment.min.js
+bluebird.min.js
+lodash.min.js
