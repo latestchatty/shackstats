@@ -256,7 +256,27 @@ $(document).ready(function() {
                 "div#startDateOption",
                 "div#endDateOption",
             ],
-            defaultDisplay: options.groupBy === "day" ? "scatter" : "line"
+            defaultDisplay: options.groupBy === "day" ? "scatter" : "line",
+            getCsvFilename: function() {
+                switch (options.groupBy) {
+                    case "day": return resolveP("daily_new_poster_counts.csv");
+                    case "week": return resolveP("weekly_new_poster_counts.csv");
+                    case "month": return resolveP("monthly_new_poster_counts.csv");
+                    case "year": return resolveP("yearly_new_poster_counts.csv");
+                    default: return rejectP("Unrecognized grouping.");
+                }
+            },
+            generateChartInfo: function(csvData) {
+                var points = _.map(csvData, function(row) {
+                    return { x: moment(row.date).toDate(), y: parseInt(row.new_poster_count) };
+                });
+                return resolveP({
+                    chartTitle: groupAdjectives[options.groupBy] + " new users",
+                    xAxisLabel: "Date",
+                    yAxisLabel: "Number of New Users",
+                    values: filterPointsByDateRange(options, points)
+                });
+            }
         },
         {
             name: "newUsersWithTenPosts",
@@ -267,7 +287,27 @@ $(document).ready(function() {
                 "div#startDateOption",
                 "div#endDateOption",
             ],
-            defaultDisplay: options.groupBy === "day" ? "scatter" : "line"
+            defaultDisplay: options.groupBy === "day" ? "scatter" : "line",
+            getCsvFilename: function() {
+                switch (options.groupBy) {
+                    case "day": return resolveP("daily_new_10plus_poster_counts.csv");
+                    case "week": return resolveP("weekly_new_10plus_poster_counts.csv");
+                    case "month": return resolveP("monthly_new_10plus_poster_counts.csv");
+                    case "year": return resolveP("yearly_new_10plus_poster_counts.csv");
+                    default: return rejectP("Unrecognized grouping.");
+                }
+            },
+            generateChartInfo: function(csvData) {
+                var points = _.map(csvData, function(row) {
+                    return { x: moment(row.date).toDate(), y: parseInt(row.new_poster_count) };
+                });
+                return resolveP({
+                    chartTitle: groupAdjectives[options.groupBy] + " new users with 10+ posts",
+                    xAxisLabel: "Date",
+                    yAxisLabel: "Number of New Users with 10+ Posts",
+                    values: filterPointsByDateRange(options, points)
+                });
+            }
         }
     ];
 
