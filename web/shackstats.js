@@ -85,6 +85,16 @@ function parseDisplay(x) {
     }
 }
 
+function parseNewUserFilter(x) {
+    switch (x) {
+        case "10plus":
+        case "all":
+            return x;
+        default:
+            return null;
+    }
+}
+
 function downloadCsv(filename) { // Promise<any[]>
     return new Promise(function(resolve, reject) {
         $("div#footer").append($("<span class=\"download\"><a href=\"" + dataRoot + filename + "\">" +
@@ -144,6 +154,7 @@ $(document).ready(function() {
         groupBy: parseGroup(getUrlParameter("group")) || "month",
         startDate: parseDate(getUrlParameter("startDate")),
         endDate: parseDate(getUrlParameter("endDate")),
+        newUserFilter: parseNewUserFilter(getUrlParameter("newUserFilter")) || "10plus",
         author: getUrlParameter("author"),
         category: parseCategory(getUrlParameter("category")),
         display: parseDisplay(getUrlParameter("display"))
@@ -219,7 +230,7 @@ $(document).ready(function() {
         {
             name: "activeUsers",
             title: "Active Users",
-            unit: "Users",
+            unit: "User count",
             showOptions: [
                 "div#groupOption", 
                 "div#startDateOption",
@@ -250,19 +261,22 @@ $(document).ready(function() {
         {
             name: "newUsers",
             title: "New Users",
-            unit: "New users",
+            unit: "User count",
             showOptions: [
                 "div#groupOption", 
                 "div#startDateOption",
                 "div#endDateOption",
+                "div#authorDivider",
+                "div#newUserFilterOption"
             ],
             defaultDisplay: options.groupBy === "day" ? "scatter" : "line",
             getCsvFilename: function() {
+                var tenPlus = options.newUserFilter === "10plus" ? "10plus_" : ""; 
                 switch (options.groupBy) {
-                    case "day": return resolveP("daily_new_poster_counts.csv");
-                    case "week": return resolveP("weekly_new_poster_counts.csv");
-                    case "month": return resolveP("monthly_new_poster_counts.csv");
-                    case "year": return resolveP("yearly_new_poster_counts.csv");
+                    case "day": return resolveP("daily_new_" + tenPlus + "poster_counts.csv");
+                    case "week": return resolveP("weekly_new_" + tenPlus + "poster_counts.csv");
+                    case "month": return resolveP("monthly_new_" + tenPlus + "poster_counts.csv");
+                    case "year": return resolveP("yearly_new_" + tenPlus + "poster_counts.csv");
                     default: return rejectP("Unrecognized grouping.");
                 }
             },
@@ -270,41 +284,11 @@ $(document).ready(function() {
                 var points = _.map(csvData, function(row) {
                     return { x: moment(row.date).toDate(), y: parseInt(row.new_poster_count) };
                 });
+                var tenPlus = options.newUserFilter === "10plus" ? " with 10+ posts" : "";
                 return resolveP({
-                    chartTitle: groupAdjectives[options.groupBy] + " new users",
+                    chartTitle: groupAdjectives[options.groupBy] + " new users" + tenPlus,
                     xAxisLabel: "Date",
-                    yAxisLabel: "Number of New Users",
-                    values: filterPointsByDateRange(options, points)
-                });
-            }
-        },
-        {
-            name: "newUsersWithTenPosts",
-            title: "New Users with 10+ Posts",
-            unit: "New users with 10+ posts",
-            showOptions: [
-                "div#groupOption", 
-                "div#startDateOption",
-                "div#endDateOption",
-            ],
-            defaultDisplay: options.groupBy === "day" ? "scatter" : "line",
-            getCsvFilename: function() {
-                switch (options.groupBy) {
-                    case "day": return resolveP("daily_new_10plus_poster_counts.csv");
-                    case "week": return resolveP("weekly_new_10plus_poster_counts.csv");
-                    case "month": return resolveP("monthly_new_10plus_poster_counts.csv");
-                    case "year": return resolveP("yearly_new_10plus_poster_counts.csv");
-                    default: return rejectP("Unrecognized grouping.");
-                }
-            },
-            generateChartInfo: function(csvData) {
-                var points = _.map(csvData, function(row) {
-                    return { x: moment(row.date).toDate(), y: parseInt(row.new_poster_count) };
-                });
-                return resolveP({
-                    chartTitle: groupAdjectives[options.groupBy] + " new users with 10+ posts",
-                    xAxisLabel: "Date",
-                    yAxisLabel: "Number of New Users with 10+ Posts",
+                    yAxisLabel: "Number of new users" + tenPlus,
                     values: filterPointsByDateRange(options, points)
                 });
             }
@@ -313,8 +297,8 @@ $(document).ready(function() {
 
     $("span#datasetLinks").append(
         datasets
-        .map(function(x) { return "<a href=\"?dataset=" + x.name + "\">" + x.title + "</a>"; })
-        .join(" <span class=\"bullet\">&bull;</span> ")
+        .map(function(x) { return "<a href=\"?dataset=" + x.name + "\"><span style=\"color: black; margin-right: 5px;\"><i class=\"fa fa-area-chart\" aria-hidden=\"true\"></i></span>" + x.title + "</a>"; })
+        .join(" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
     );
 
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
@@ -329,6 +313,7 @@ $(document).ready(function() {
     $("input#authorTxt").val(options.author || "");
     $("select#categoryCmb").val(options.category || "");
     $("select#displayCmb").val(options.display || dataset.defaultDisplay);
+    $("select#newUserFilterCmb").val(options.newUserFilter);
     $("div#optionsContainer").css("visibility", "visible");
 
     resolveP()

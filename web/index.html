@@ -9,11 +9,11 @@
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h3 style="font-weight: normal; line-height: 150%; float: right;">
+        <h1 style="display: inline-block;">ShackStats</h1>
+
+        <h3 style="font-weight: normal; line-height: 150%; display: inline-block; margin-left: 50px;">
             <span id="datasetLinks"></span>
         </h3>
-
-        <h1><i class="fa fa-area-chart" aria-hidden="true"></i> ShackStats</h1>
 
         <div id="datasetTitle">
             &nbsp;
@@ -41,6 +41,13 @@
                         <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
                     </div>
                     <div class="option divider" id="authorDivider"></div>
+                    <div class="option" id="newUserFilterOption">
+                        User filter:<br>
+                        <select id="newUserFilterCmb" name="newUserFilter">
+                            <option value="10plus">10+ posts only</option>
+                            <option value="all">All new users</option>
+                        </select>
+                    </div>
                     <div class="option" id="authorOption">
                         Author:<br>
                         <input id="authorTxt" type="text" style="width: 150px;" name="author">
@@ -86,7 +93,7 @@
         </div>
 
         <p style="margin-top: 40px; text-align: right;">
-            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">CSV file formats</a>
+            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">CSV file documentation</a>
         </p>
 
         <script src="ext/jquery.min.js"></script>

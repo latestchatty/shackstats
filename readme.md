@@ -1,10 +1,10 @@
-# Shack Stats
+# ShackStats
 
 Visit the [ShackStats](https://shackstats.com) website. 
 
 # Data files
 
-These files are generated daily and uploaded to `https://shackstats.com/data/`. 
+These files are generated daily and available at `https://shackstats.com/data/`. 
 
 ## `files.csv`
 1. `filename` (PK)
