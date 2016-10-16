@@ -61,6 +61,7 @@ async function go(): Promise<void> {
                 ContentType:
                     relativePath.endsWith(".html") ? "text/html" :
                     relativePath.endsWith(".csv") ? "text/plain" :
+                    relativePath.endsWith(".txt") ? "text/plain" :
                     relativePath.endsWith(".css") ? "text/css" :
                     relativePath.endsWith(".js") ? "application/javascript" :
                     relativePath.endsWith(".eot") ? "application/eot" :

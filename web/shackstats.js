@@ -56,10 +56,10 @@ function parseDate(x) {
     if (x === null) {
         return null;
     } else if (x.toString().match(/^[0-9][0-9][0-9][0-9]$/)) {
-        return x + "-01-01";
+        return moment(x + "-01-01").toDate();
     } else {
         var m = moment(x);
-        return m.isValid() ? m.format("YYYY-MM-DD") : null;
+        return m.isValid() ? m.toDate() : null;
     }
 }
 
@@ -151,7 +151,7 @@ function filterPointsByDateRange(options, points) {
         }
     });
 }
-console.log(parseDate("2015"));
+
 $(document).ready(function() {
     $.fn.dataTable.ext.errMode = "none";
 
