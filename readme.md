@@ -4,7 +4,7 @@ Visit the [ShackStats](https://shackstats.com) website.
 
 # Data files
 
-These files are generated daily and available at `https://shackstats.com/data/`. 
+These files are generated daily and available at `https://shackstats.com/data/`.  A full file listing is available in [`files.csv`](https://shackstats.com/data/files.csv).
 
 ## `files.csv`
 1. `filename` (PK)

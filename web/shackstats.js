@@ -29,6 +29,7 @@ function getUrlParameter(name) {
 
 function parseDataset(x) {
     switch (x) {
+        case "topPosters":
         case "totalPosts":
         case "activeUsers":
         case "newUsers":
@@ -54,9 +55,11 @@ function parseGroup(x) {
 function parseDate(x) {
     if (x === null) {
         return null;
+    } else if (x.toString().match(/^[0-9][0-9][0-9][0-9]$/)) {
+        return x + "-01-01";
     } else {
         var m = moment(x);
-        return m.isValid() ? m.toDate() : null;
+        return m.isValid() ? m.format("YYYY-MM-DD") : null;
     }
 }
 
@@ -97,12 +100,11 @@ function parseNewUserFilter(x) {
 
 function downloadCsv(filename) { // Promise<any[]>
     return new Promise(function(resolve, reject) {
-        $("div#footer").append($("<span class=\"download\"><a href=\"" + dataRoot + filename + "\">" +
-            "<i class=\"fa fa-file-text-o\" aria-hidden=\"true\"></i>" + filename + "</a></span>"));
-
         $.ajax({
             url: dataRoot + filename,
             success: function(data) {
+                $("div#footer").append($("<span class=\"download\"><a href=\"" + dataRoot + filename + "\">" +
+                    "<i class=\"fa fa-file-text-o\" aria-hidden=\"true\"></i>" + filename + "</a></span>"));                
                 Papa.parse(data, {
                     header: true,
                     error: function(err) {
@@ -114,7 +116,9 @@ function downloadCsv(filename) { // Promise<any[]>
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                reject(textStatus.toString());
+                $("div#footer").append($("<span class=\"download\">" +
+                    "<i class=\"fa fa-warning\" aria-hidden=\"true\"></i>" + filename + "</span>"));
+                reject("The data file was not found.");
             }
         });
     });
@@ -147,11 +151,15 @@ function filterPointsByDateRange(options, points) {
         }
     });
 }
-
+console.log(parseDate("2015"));
 $(document).ready(function() {
+    $.fn.dataTable.ext.errMode = "none";
+
     var options = {
         dataset: parseDataset(getUrlParameter("dataset")) || "totalPosts",
         groupBy: parseGroup(getUrlParameter("group")) || "month",
+        periodType: parseGroup(getUrlParameter("periodType")) || "day",
+        periodDate: parseDate(getUrlParameter("periodDate")) || moment().add(-1, "day").toDate(),
         startDate: parseDate(getUrlParameter("startDate")),
         endDate: parseDate(getUrlParameter("endDate")),
         newUserFilter: parseNewUserFilter(getUrlParameter("newUserFilter")) || "10plus",
@@ -180,6 +188,44 @@ $(document).ready(function() {
 
     var datasets = [
         {
+            type: "scoreboard",
+            name: "topPosters",
+            title: "Top Posters",
+            showOptions: [
+                "div#periodOption",
+                "div#periodDateOption",  
+                "div#authorDivider",
+                "div#categoryOption",
+            ],
+            defaultDisplay: "table",
+            getCsvFilename: function() {
+                var periodStartDate = moment(options.periodDate).startOf(options.periodType).format("YYYYMMDD");
+                var filename = "post_counts_by_user_for_" + options.periodType + "_" + periodStartDate + ".csv";  
+                return resolveP(filename);
+            },
+            generateChartInfo: function(csvData) {
+                var col = valueColumnForCategory(options.category);
+                var points = _.map(csvData, function(row) {
+                    return { x: usernameDict[row.user_id], y: parseInt(row[col]) }
+                });
+                var filteredPoints = _.filter(points, function(pt) { return pt.y > 0; });
+                var orderedPoints = _.orderBy(filteredPoints, ["y"], ["desc"]);
+                var dateFormat =
+                    options.periodType === "month" ? "MM/YYYY" :
+                    options.periodType === "year" ? "YYYY" :
+                    "MM/DD/YYYY";
+                var periodStartDate = moment(options.periodDate).startOf(options.periodType).format(dateFormat);
+                var titleCategoryPart = options.category === null ? "" : "\"" + options.category + "\" ";
+                return resolveP({
+                    chartTitle: "Top " + titleCategoryPart + "posters for " + options.periodType + " of " + periodStartDate,
+                    xAxisLabel: "User",
+                    yAxisLabel: "Number of posts",
+                    values: orderedPoints
+                });
+            }
+        },
+        {
+            type: "changeOverTime",
             name: "totalPosts",
             title: "Posts",
             unit: "Post count",
@@ -228,6 +274,7 @@ $(document).ready(function() {
             }
         },
         {
+            type: "changeOverTime",
             name: "activeUsers",
             title: "Active Users",
             unit: "User count",
@@ -253,12 +300,13 @@ $(document).ready(function() {
                 return resolveP({
                     chartTitle: groupAdjectives[options.groupBy] + " active users",
                     xAxisLabel: "Date",
-                    yAxisLabel: "Number of Active Users",
+                    yAxisLabel: "Number of active users",
                     values: filterPointsByDateRange(options, points)
                 });
             }
         },
         {
+            type: "changeOverTime",
             name: "newUsers",
             title: "New Users",
             unit: "User count",
@@ -297,23 +345,41 @@ $(document).ready(function() {
 
     $("span#datasetLinks").append(
         datasets
-        .map(function(x) { return "<a href=\"?dataset=" + x.name + "\"><span style=\"color: black; margin-right: 5px;\"><i class=\"fa fa-area-chart\" aria-hidden=\"true\"></i></span>" + x.title + "</a>"; })
+        .map(function(x) {
+            var icon = x.type == "scoreboard" ? "fa-list" : "fa-area-chart";
+            return "<a href=\"?dataset=" + x.name + "\">" +
+                "<span style=\"color: #606060; margin-right: 5px;\">" +
+                "<i class=\"fa " + icon + "\" aria-hidden=\"true\"></i></span>" + x.title + "</a>";
+        })
         .join(" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
     );
 
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     options.display = options.display || dataset.defaultDisplay;
     $(dataset.showOptions.join()).css("display", "table-cell");
+    if (dataset.type === "scoreboard") {
+        $("option#scatterChoice, option#lineChoice").remove();
+        options.display = "table";
+    }
 
     $("div#datasetTitle").text(dataset.title);
     $("input#datasetField").val(options.dataset);
     $("select#groupCmb").val(options.groupBy);
+    $("select#periodTypeCmb").val(options.periodType);
+    $("input#periodDateTxt").val(moment(options.periodDate).format("MM/DD/YYYY"));
     $("input#startDateTxt").val(options.startDate === null ? "" : moment(options.startDate).format("MM/DD/YYYY"));
     $("input#endDateTxt").val(options.endDate === null ? "" : moment(options.endDate).format("MM/DD/YYYY"));
     $("input#authorTxt").val(options.author || "");
     $("select#categoryCmb").val(options.category || "");
     $("select#displayCmb").val(options.display || dataset.defaultDisplay);
     $("select#newUserFilterCmb").val(options.newUserFilter);
+
+    $("div.option").each(function() {
+        var jthis = $(this);
+        if (jthis.css("display") === "none") {
+            jthis.remove();
+        }
+    });
     $("div#optionsContainer").css("visibility", "visible");
 
     resolveP()
@@ -328,8 +394,6 @@ $(document).ready(function() {
             return dataset.getCsvFilename();
         })
         .then(function(csvFilename) {
-            $("code#csvFilename").text(csvFilename);
-            $("a#csvLink").attr("href", dataRoot + csvFilename).css("visibility", "visible");
             return downloadCsv(csvFilename);
         })
         .then(function(csvData) {
@@ -344,17 +408,24 @@ $(document).ready(function() {
                 case "scatter":
                     createGraphCanvas(dataset, chartInfo, options); 
                     break;
-                case "csv":
-                    break;
             }
         })
         .catch(function(err) {
-            $("div#loading").text("Error loading data: " + err.toString());
+            $("div#loading").text(err.toString());
         });
 });
 
 function createDataTable(dataset, chartInfo, options) {
-    var data = _.map(chartInfo.values, function(pt) { return [moment(pt.x).format("YYYY-MM-DD"), pt.y]; });
+    var data, order;
+    
+    if (dataset.type === "scoreboard") {
+        data = _.map(chartInfo.values, function(pt) { return [pt.x, pt.y]; });
+        order = [[1, "desc"]];
+    } else {
+        data = _.map(chartInfo.values, function(pt) { return [moment(pt.x).format("YYYY-MM-DD"), pt.y]; });
+        order = [[0, "asc"]];
+    }
+
     var table = $("table#datatable");
     table.dataTable({
         data: data,
@@ -366,7 +437,7 @@ function createDataTable(dataset, chartInfo, options) {
         searching: false,
         pagingType: "full_numbers",
         pageLength: 25,
-        order: [[0, "asc"]]
+        order: order
     });
 
     $("div#datatableTitle").text(chartInfo.chartTitle).css("display", "block");

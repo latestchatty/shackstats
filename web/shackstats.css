@@ -94,7 +94,7 @@ span.bullet {
 table#datatable {
     border-collapse: collapse;
     margin-bottom: 10px;
-    width: 300px !important;
+    width: 400px !important;
 }
 table#datatable thead tr th {
     border: 1px solid #E0E0E0;

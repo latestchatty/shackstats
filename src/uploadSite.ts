@@ -70,6 +70,7 @@ async function go(): Promise<void> {
                     relativePath.endsWith(".svg") ? "image/svg+xml" :
                     relativePath.endsWith(".woff") ? "application/woff" :
                     relativePath.endsWith(".woff2") ? "application/woff" :
+                    relativePath.endsWith(".png") ? "image/png" :
                     "application/octet-stream",
                 ContentDisposition: "inline"
             }, {}, (err, data) => {
@@ -91,8 +92,13 @@ async function go(): Promise<void> {
     await uploadWebFile("ext/font-awesome/fonts/fontawesome-webfont.woff2");
     await uploadWebFile("ext/bluebird.min.js");
     await uploadWebFile("ext/Chart.min.js");
-    await uploadWebFile("ext/jquery.dataTables.css");
-    await uploadWebFile("ext/jquery.dataTables.js");
+    await uploadWebFile("ext/jquery.dataTables/css/jquery.dataTables.css");
+    await uploadWebFile("ext/jquery.dataTables/js/jquery.dataTables.js");
+    await uploadWebFile("ext/jquery.dataTables/images/sort_asc.png");
+    await uploadWebFile("ext/jquery.dataTables/images/sort_asc_disabled.png");
+    await uploadWebFile("ext/jquery.dataTables/images/sort_both.png");
+    await uploadWebFile("ext/jquery.dataTables/images/sort_desc.png");
+    await uploadWebFile("ext/jquery.dataTables/images/sort_desc_disabled.png");
     await uploadWebFile("ext/jquery.min.js");
     await uploadWebFile("ext/lodash.min.js");
     await uploadWebFile("ext/moment.min.js");

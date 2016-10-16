@@ -4,12 +4,12 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>ShackStats</title>
-        <link rel="stylesheet" href="ext/jquery.dataTables.css">
+        <link rel="stylesheet" href="ext/jquery.dataTables/css/jquery.dataTables.css">
         <link rel="stylesheet" href="ext/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h1 style="display: inline-block;">ShackStats</h1>
+        <h1 style="display: inline-block;"><a href="?">ShackStats</a></h1>
 
         <h3 style="font-weight: normal; line-height: 150%; display: inline-block; margin-left: 50px;">
             <span id="datasetLinks"></span>
@@ -31,6 +31,19 @@
                             <option value="month">Month</option>
                             <option value="year">Year</option>
                         </select>
+                    </div>
+                    <div class="option" id="periodOption">
+                        Period:<br>
+                        <select id="periodTypeCmb" name="periodType">
+                            <option value="day">Day of</option>
+                            <option value="week">Week of</option>
+                            <option value="month">Month of</option>
+                            <option value="year">Year of</option>
+                        </select>
+                    </div>
+                    <div class="option" id="periodDateOption">
+                        Date:<br>
+                        <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate">
                     </div>
                     <div class="option" id="startDateOption">
                         Start date:<br>
@@ -97,7 +110,7 @@
         </p>
 
         <script src="ext/jquery.min.js"></script>
-        <script src="ext/jquery.dataTables.js"></script>
+        <script src="ext/jquery.dataTables/js/jquery.dataTables.js"></script>
         <script src="ext/papaparse.min.js"></script>
         <script src="ext/moment.min.js"></script>
         <script src="ext/Chart.min.js"></script>
