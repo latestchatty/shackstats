@@ -423,6 +423,7 @@ function doLoad() {
         $("option#scatterChoice, option#lineChoice").removeAttr("disabled");
     }
     onPeriodTypeChange();
+    onGroupChange();
 
     $("div#loading").text("Loading...").css("display", "block");
     $("div#datatableContainer").html("").css("display", "none");
@@ -493,6 +494,27 @@ function onPeriodTypeChange() {
         .val(moment(d).startOf("year").format("YYYY-MM-DD"));
 }
 
+function onGroupChange() {
+    var groupCmb = $("select#groupCmb");
+    var t = groupCmb.val();
+
+    var d = $("input#startDateTxt").val(); 
+    $("input#startDateTxt").css("display", (t === "day" || t === "week") ? "inline-block" : "none");
+    $("select#startDateMonthCmb")
+        .css("display", t === "month" ? "inline-block" : "none")
+        .val(moment(d).startOf("month").format("YYYY-MM-DD"));
+    $("select#startDateYearCmb").css("display", t === "year" ? "inline-block" : "none")
+        .val(moment(d).startOf("year").format("YYYY-MM-DD"));
+
+    d = $("input#endDateTxt").val(); 
+    $("input#endDateTxt").css("display", (t === "day" || t === "week") ? "inline-block" : "none");
+    $("select#endDateMonthCmb")
+        .css("display", t === "month" ? "inline-block" : "none")
+        .val(moment(d).startOf("month").format("YYYY-MM-DD"));
+    $("select#endDateYearCmb").css("display", t === "year" ? "inline-block" : "none")
+        .val(moment(d).startOf("year").format("YYYY-MM-DD"));
+}
+
 $(document).ready(function() {
     $.fn.dataTable.ext.errMode = "none";
 
@@ -509,21 +531,30 @@ $(document).ready(function() {
         .join("")
     );
 
-    var yearCmb = $("select#periodDateYearCmb");
-    var monthCmb = $("select#periodDateMonthCmb");
+    var yearCmbs = [$("select#periodDateYearCmb"), $("select#startDateYearCmb"), $("select#endDateYearCmb")];
+    var monthCmbs = [$("select#periodDateMonthCmb"), $("select#startDateMonthCmb"), $("select#endDateMonthCmb")];
+
+    $("select#startDateYearCmb").append($("<option value=\"\"></option>"));
+    $("select#endDateYearCmb").append($("<option value=\"\"></option>"));
+    $("select#startDateMonthCmb").append($("<option value=\"\"></option>"));
+    $("select#endDateMonthCmb").append($("<option value=\"\"></option>"));
+
     var currentYear = moment().year();
     for (var year = 1999; year <= currentYear; year++) {
-        var yo = $("<option value=\"" + year + "-01-01\">" + year +"</option>");
-        yearCmb.append(yo);
+        yearCmbs.forEach(function(yearCmb) {
+            yearCmb.append($("<option value=\"" + year + "-01-01\">" + year +"</option>"));
+        });
 
-        var monthCmbGroup = $("<optgroup label=\"" + year + "\">");
-        for (var month = 1; month <= 12; month++) {
-            var m = moment(year + "-" + month + "-01");
-            var mo = $("<option value=\"" + m.format("YYYY-MM-DD") + "\">" + m.format("MMM 'YY") +"</option>");
-            monthCmbGroup.append(mo);
-        }
-
-        monthCmb.append(monthCmbGroup);
+        monthCmbs.forEach(function(monthCmb) {
+            var monthCmbGroup = $("<optgroup label=\"" + year + "\">");
+            for (var month = 1; month <= 12; month++) {
+                var m = moment(year + "-" + month + "-01");
+                monthCmbGroup.append(
+                    $("<option value=\"" + m.format("YYYY-MM-DD") + "\">" + m.format("MMM 'YY") +"</option>")
+                );
+            }
+            monthCmb.append(monthCmbGroup);
+        });
     }
 
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
@@ -535,27 +566,31 @@ $(document).ready(function() {
             doLoad();
         });
 
-    $("input#periodDateTxt").datepick({
-        onSelect: function() {
+    ["period", "start", "end"].forEach(function(prefix) {
+        $("input#" + prefix + "DateTxt").datepick({
+            onSelect: function() {
+                readOptionsFromForm();
+                doLoad();
+            },
+            minDate: moment("1999-06-01").toDate(),
+            showAnim: "",
+            yearRange: "1999:" + moment().format("YYYY"),
+            dateFormat: "yyyy-mm-dd"
+        });
+        $("select#" + prefix + "DateMonthCmb").change(function() {
+            $("input#" + prefix + "DateTxt").val($("select#" + prefix + "DateMonthCmb").val());
             readOptionsFromForm();
             doLoad();
-        },
-        minDate: moment("1999-06-01").toDate(),
-        showAnim: "",
-        yearRange: "1999:" + moment().format("YYYY"),
-        dateFormat: "yyyy-mm-dd"
+        });
+        $("select#" + prefix + "DateYearCmb").change(function() {
+            $("input#" + prefix + "DateTxt").val($("select#" + prefix + "DateYearCmb").val());
+            readOptionsFromForm();
+            doLoad();
+        });
     });
+
     $("select#periodTypeCmb").change(onPeriodTypeChange);
-    $("select#periodDateMonthCmb").change(function() {
-        $("input#periodDateTxt").val($("select#periodDateMonthCmb").val());
-        readOptionsFromForm();
-        doLoad();
-    });
-    $("select#periodDateYearCmb").change(function() {
-        $("input#periodDateTxt").val($("select#periodDateYearCmb").val());
-        readOptionsFromForm();
-        doLoad();
-    });
+    $("select#groupCmb").change(onGroupChange);
 
     ["input#periodDateTxt", "input#startDateTxt", "input#endDateTxt", "input#authorTxt"].forEach(function(sel) {
         var elem = $(sel);
