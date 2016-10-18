@@ -6,11 +6,12 @@
         <meta name="viewport" content="width=1050, user-scalable=no">
         <title>ShackStats</title>
         <link rel="stylesheet" href="ext/jquery.dataTables/css/jquery.dataTables.css">
+        <link rel="stylesheet" href="ext/jquery.datepick/jquery.datepick.css">
         <link rel="stylesheet" href="ext/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h1><a href="/" style="color: black;"><i class="fa fa-line-chart" aria-hidden="true" style="margin-right: 5px;"></i>ShackStats</a></h1>
+        <h1><a href="#" style="color: black;"><i class="fa fa-line-chart" aria-hidden="true" style="margin-right: 8px;"></i>ShackStats</a></h1>
 
         <div id="datasetLinksContainer">
             <span id="datasetLinks"></span>
@@ -20,7 +21,7 @@
             <div id="optionsContainer">
                 <div class="option" id="groupOption">
                     Group by:<br>
-                    <select id="groupCmb" name="group">
+                    <select id="groupCmb">
                         <option value="day">Day</option>
                         <option value="week">Week</option>
                         <option value="month">Month</option>
@@ -29,40 +30,42 @@
                 </div>
                 <div class="option" id="periodOption">
                     Period:<br>
-                    <select id="periodTypeCmb" name="periodType">
-                        <option value="day">Day of</option>
-                        <option value="week">Week of</option>
-                        <option value="month">Month of</option>
-                        <option value="year">Year of</option>
+                    <select id="periodTypeCmb">
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                        <option value="year">Year</option>
                     </select>
                 </div>
                 <div class="option" id="periodDateOption">
                     Date:<br>
-                    <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate" autocomplete="off">
+                    <input id="periodDateTxt" type="text" style="width: 90px; display: none;" autocomplete="off">
+                    <select id="periodDateMonthCmb"></select>
+                    <select id="periodDateYearCmb" style="display: none;"></select>
                 </div>
                 <div class="option" id="startDateOption">
                     Start date:<br>
-                    <input id="startDateTxt" type="text" style="width: 90px;" name="startDate" autocomplete="off">
+                    <input id="startDateTxt" type="text" style="width: 90px;" autocomplete="off">
                 </div>
                 <div class="option" id="endDateOption">
                     End date:<br>
-                    <input id="endDateTxt" type="text" style="width: 90px;" name="endDate" autocomplete="off">
+                    <input id="endDateTxt" type="text" style="width: 90px;" autocomplete="off">
                 </div>
                 <div class="option divider" id="authorDivider"></div>
                 <div class="option" id="newUserFilterOption">
                     User filter:<br>
-                    <select id="newUserFilterCmb" name="newUserFilter">
+                    <select id="newUserFilterCmb">
                         <option value="10plus">10+ posts only</option>
                         <option value="all">All new users</option>
                     </select>
                 </div>
                 <div class="option" id="authorOption">
                     Author:<br>
-                    <input id="authorTxt" type="text" style="width: 150px;" name="author" autocomplete="off">
+                    <input id="authorTxt" type="text" style="width: 150px;" autocomplete="off">
                 </div>
                 <div class="option" id="categoryOption">
                     Moderation flag:<br>
-                    <select id="categoryCmb" name="category">
+                    <select id="categoryCmb">
                         <option value="">&nbsp;</option>
                         <option value="ontopic">On-topic</option>
                         <option value="nws">Not work safe</option>
@@ -75,7 +78,7 @@
                 <div class="option divider alwaysShown" id="displayDivider"></div>
                 <div class="option alwaysShown">
                     Display as:<br>
-                    <select id="displayCmb" name="display">
+                    <select id="displayCmb">
                         <option value="scatter" id="scatterChoice">Scatter plot</option>
                         <option value="line" id="lineChoice">Line graph</option>
                         <option value="table">Data table</option>
@@ -95,11 +98,13 @@
         </div>
 
         <p style="float: right; margin-top: 30px; text-align: right;">
-            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Documentation</a>
+            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Documentation</a>
         </p>
 
         <script src="ext/jquery.min.js"></script>
         <script src="ext/jquery.dataTables/js/jquery.dataTables.js"></script>
+        <script src="ext/jquery.datepick/jquery.plugin.min.js"></script>
+        <script src="ext/jquery.datepick/jquery.datepick.min.js"></script>
         <script src="ext/papaparse.min.js"></script>
         <script src="ext/moment.min.js"></script>
         <script src="ext/Chart.min.js"></script>

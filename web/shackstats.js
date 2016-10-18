@@ -170,6 +170,8 @@ var userIdDict = {}; // lowercase username -> user id
 var usernameDict = {}; // user id -> username
 var usersLoaded = false;
 
+var options = {};
+
 var datasets = [
     {
         type: "scoreboard",
@@ -339,14 +341,12 @@ var datasets = [
     }
 ];
 
-var options = {};
-
 function setOptions(args) {
     options.dataset = parseDataset(args.dataset) || "topPosters";
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     options.groupBy = parseGroup(args.groupBy) || "month";
-    options.periodType = parseGroup(args.periodType) || "day";
-    options.periodDate = parseDate(args.periodDate) || moment().add(-1, "day").toDate();
+    options.periodType = parseGroup(args.periodType) || "month";
+    options.periodDate = parseDate(args.periodDate) || moment().add(-1, "day").startOf("day").toDate();
     options.startDate = parseDate(args.startDate);
     options.endDate = parseDate(args.endDate);
     options.newUserFilter = parseNewUserFilter(args.newUserFilter) || "10plus";
@@ -422,6 +422,7 @@ function doLoad() {
     } else {
         $("option#scatterChoice, option#lineChoice").removeAttr("disabled");
     }
+    onPeriodTypeChange();
 
     $("div#loading").text("Loading...").css("display", "block");
     $("div#datatableContainer").html("").css("display", "none");
@@ -471,13 +472,25 @@ function setFormFromOptions() {
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     $("select#groupCmb").val(options.groupBy);
     $("select#periodTypeCmb").val(options.periodType);
-    $("input#periodDateTxt").val(moment(options.periodDate).format("MM/DD/YYYY"));
-    $("input#startDateTxt").val(options.startDate === null ? "" : moment(options.startDate).format("MM/DD/YYYY"));
-    $("input#endDateTxt").val(options.endDate === null ? "" : moment(options.endDate).format("MM/DD/YYYY"));
+    $("input#periodDateTxt").val(moment(options.periodDate).format("YYYY-MM-DD"));
+    $("input#startDateTxt").val(options.startDate === null ? "" : moment(options.startDate).format("YYYY-MM-DD"));
+    $("input#endDateTxt").val(options.endDate === null ? "" : moment(options.endDate).format("YYYY-MM-DD"));
     $("input#authorTxt").val(options.author || "");
     $("select#categoryCmb").val(options.category || "");
     $("select#displayCmb").val(options.display || dataset.defaultDisplay);
     $("select#newUserFilterCmb").val(options.newUserFilter);
+}
+
+function onPeriodTypeChange() {
+    var periodTypeCmb = $("select#periodTypeCmb");
+    var t = periodTypeCmb.val();
+    var d = $("input#periodDateTxt").val(); 
+    $("input#periodDateTxt").css("display", (t === "day" || t === "week") ? "inline-block" : "none");
+    $("select#periodDateMonthCmb")
+        .css("display", t === "month" ? "inline-block" : "none")
+        .val(moment(d).startOf("month").format("YYYY-MM-DD"));
+    $("select#periodDateYearCmb").css("display", t === "year" ? "inline-block" : "none")
+        .val(moment(d).startOf("year").format("YYYY-MM-DD"));
 }
 
 $(document).ready(function() {
@@ -490,11 +503,28 @@ $(document).ready(function() {
         .map(function(x) {
             var icon = x.type == "scoreboard" ? "fa-list" : "fa-area-chart";
             return "<a href=\"#dataset=" + x.name + "\" class=\"datasetLink\" id=\"datasetLink" + x.name + "\">" +
-                "<span style=\"margin-right: 5px;\">" +
+                "<span style=\"margin-right: 8px;\">" +
                 "<i class=\"fa " + icon + "\" aria-hidden=\"true\"></i></span>" + x.title + "</a>";
         })
         .join("")
     );
+
+    var yearCmb = $("select#periodDateYearCmb");
+    var monthCmb = $("select#periodDateMonthCmb");
+    var currentYear = moment().year();
+    for (var year = 1999; year <= currentYear; year++) {
+        var yo = $("<option value=\"" + year + "-01-01\">" + year +"</option>");
+        yearCmb.append(yo);
+
+        var monthCmbGroup = $("<optgroup label=\"" + year + "\">");
+        for (var month = 1; month <= 12; month++) {
+            var m = moment(year + "-" + month + "-01");
+            var mo = $("<option value=\"" + m.format("YYYY-MM-DD") + "\">" + m.format("MMM 'YY") +"</option>");
+            monthCmbGroup.append(mo);
+        }
+
+        monthCmb.append(monthCmbGroup);
+    }
 
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     setFormFromOptions();
@@ -504,6 +534,28 @@ $(document).ready(function() {
             readOptionsFromForm();
             doLoad();
         });
+
+    $("input#periodDateTxt").datepick({
+        onSelect: function() {
+            readOptionsFromForm();
+            doLoad();
+        },
+        minDate: moment("1999-06-01").toDate(),
+        showAnim: "",
+        yearRange: "1999:" + moment().format("YYYY"),
+        dateFormat: "yyyy-mm-dd"
+    });
+    $("select#periodTypeCmb").change(onPeriodTypeChange);
+    $("select#periodDateMonthCmb").change(function() {
+        $("input#periodDateTxt").val($("select#periodDateMonthCmb").val());
+        readOptionsFromForm();
+        doLoad();
+    });
+    $("select#periodDateYearCmb").change(function() {
+        $("input#periodDateTxt").val($("select#periodDateYearCmb").val());
+        readOptionsFromForm();
+        doLoad();
+    });
 
     ["input#periodDateTxt", "input#startDateTxt", "input#endDateTxt", "input#authorTxt"].forEach(function(sel) {
         var elem = $(sel);

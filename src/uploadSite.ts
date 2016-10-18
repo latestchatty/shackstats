@@ -62,6 +62,7 @@ async function go(): Promise<void> {
                     relativePath.endsWith(".html") ? "text/html" :
                     relativePath.endsWith(".csv") ? "text/plain" :
                     relativePath.endsWith(".txt") ? "text/plain" :
+                    relativePath.endsWith(".md") ? "text/plain" :
                     relativePath.endsWith(".css") ? "text/css" :
                     relativePath.endsWith(".js") ? "application/javascript" :
                     relativePath.endsWith(".eot") ? "application/eot" :
@@ -91,8 +92,6 @@ async function go(): Promise<void> {
     await uploadWebFile("ext/font-awesome/fonts/fontawesome-webfont.ttf");
     await uploadWebFile("ext/font-awesome/fonts/fontawesome-webfont.woff");
     await uploadWebFile("ext/font-awesome/fonts/fontawesome-webfont.woff2");
-    await uploadWebFile("ext/bluebird.min.js");
-    await uploadWebFile("ext/Chart.min.js");
     await uploadWebFile("ext/jquery.dataTables/css/jquery.dataTables.css");
     await uploadWebFile("ext/jquery.dataTables/js/jquery.dataTables.js");
     await uploadWebFile("ext/jquery.dataTables/images/sort_asc.png");
@@ -100,6 +99,12 @@ async function go(): Promise<void> {
     await uploadWebFile("ext/jquery.dataTables/images/sort_both.png");
     await uploadWebFile("ext/jquery.dataTables/images/sort_desc.png");
     await uploadWebFile("ext/jquery.dataTables/images/sort_desc_disabled.png");
+    await uploadWebFile("ext/jquery.datepick/jquery.datepick.css");
+    await uploadWebFile("ext/jquery.datepick/jquery.datepick.min.js");
+    await uploadWebFile("ext/jquery.datepick/jquery.plugin.min.js");
+    await uploadWebFile("ext/jquery.datepick/license.md");
+    await uploadWebFile("ext/bluebird.min.js");
+    await uploadWebFile("ext/Chart.min.js");
     await uploadWebFile("ext/jquery.min.js");
     await uploadWebFile("ext/lodash.min.js");
     await uploadWebFile("ext/moment.min.js");

@@ -22,18 +22,14 @@ div#loading, div#chartContainer {
     height: 600px;
 }
 div#graphContainer, div#options, div#datasetTitle {
-    border: 2px solid #C7C9E6;
+    border-top: 1px solid #C7C9E6;
+    border-bottom: 1px solid #C7C9E6;
     padding: 20px;
-}
-div#options {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
 }
 div#graphContainer {
     vertical-align: middle;
     text-align: center;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-top: 1px solid #C7C9E6;
 }
 div#datasetLinksContainer {
     margin-bottom: 20px;
@@ -53,6 +49,18 @@ span#datasetLinks a i {
 span#datasetLinks a.selectedDataset {
     background: #0813B5;
     color: white;    
+}
+div.datepick-ctrl {
+    background: black;
+}
+.datepick-ctrl a.datepick-cmd:hover {
+    background-color: #0813B5;
+}
+.datepick-month td a.datepick-today {
+    background-color: #CDCEE0;
+}
+.datepick-month td a.datepick-highlight {
+    background-color: #ADAFDE;
 }
 span#datasetLinks a.selectedDataset i {
     color: white;
