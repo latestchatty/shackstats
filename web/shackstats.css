@@ -21,22 +21,47 @@ a:hover {
 div#loading, div#chartContainer {
     height: 600px;
 }
-div#graphContainer, div#options, div#datasetTitle, div#footer {
-    border: 2px solid #F0F0F0;
+div#graphContainer, div#options, div#datasetTitle {
+    border: 2px solid #C7C9E6;
     padding: 20px;
+}
+div#options {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 div#graphContainer {
     vertical-align: middle;
     text-align: center;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
-div#datasetTitle {
-    background: #FAFAFA;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    font-size: 16pt;
+div#datasetLinksContainer {
+    margin-bottom: 20px;
+    font-size: 14pt;    
 }
-div#options, div#datasetTitle, div#graphContainer {
+span#datasetLinks a {
+    padding: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 4px;
+    background: #EAECFD;
+    margin-right: 10px;
+}
+span#datasetLinks a i {
+    color: black;
+}
+span#datasetLinks a.selectedDataset {
+    background: #0813B5;
+    color: white;    
+}
+span#datasetLinks a.selectedDataset i {
+    color: white;
+}
+div#options {
     border-bottom: 0;
+}
+div#footer {
+    margin-top: 25px;
 }
 input, select {
     font-size: 11pt;
@@ -63,7 +88,7 @@ div#optionsContainer {
     visibility: hidden;
 }
 div.divider {
-    border-left: 2px solid #F0F0F0;
+    border-left: 1px dotted #C7C9E6;
 }
 button {
     min-width: 85px;
@@ -125,11 +150,6 @@ div.dataTables_info {
 div.dataTables_paginate {
     text-align: inherit !important;
     float: inherit !important;
-}
-div#footer {
-    background: #FAFAFA;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
 }
 span.download {
     margin-right: 15px;

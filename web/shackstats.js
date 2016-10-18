@@ -409,9 +409,10 @@ function readOptionsFromHash() {
 }
 
 function doLoad() {
-    var dataset = datasets.filter(function(x) { return x.name ==options.dataset; })[0];
+    var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     options.display = options.display || dataset.defaultDisplay;
-    $("div#datasetTitle").text(dataset.title);
+    $("a.datasetLink").removeClass("selectedDataset");
+    $("a#datasetLink" + options.dataset).addClass("selectedDataset");
     $("div.option").css("display", "none");
     $("div.option.alwaysShown").css("display", "table-cell");
     $(dataset.showOptions.join()).css("display", "table-cell");
@@ -488,11 +489,11 @@ $(document).ready(function() {
         datasets
         .map(function(x) {
             var icon = x.type == "scoreboard" ? "fa-list" : "fa-area-chart";
-            return "<a href=\"#dataset=" + x.name + "\">" +
-                "<span style=\"color: #606060; margin-right: 5px;\">" +
+            return "<a href=\"#dataset=" + x.name + "\" class=\"datasetLink\" id=\"datasetLink" + x.name + "\">" +
+                "<span style=\"margin-right: 5px;\">" +
                 "<i class=\"fa " + icon + "\" aria-hidden=\"true\"></i></span>" + x.title + "</a>";
         })
-        .join(" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
+        .join("")
     );
 
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];

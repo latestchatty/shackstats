@@ -10,14 +10,10 @@
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h1 style="display: inline-block;"><a href="/">ShackStats</a></h1>
+        <h1><a href="/" style="color: black;"><i class="fa fa-line-chart" aria-hidden="true" style="margin-right: 5px;"></i>ShackStats</a></h1>
 
-        <h3 style="font-weight: normal; line-height: 150%; display: inline-block; margin-left: 50px;">
+        <div id="datasetLinksContainer">
             <span id="datasetLinks"></span>
-        </h3>
-
-        <div id="datasetTitle">
-            &nbsp;
         </div>
 
         <div id="options">
@@ -42,15 +38,15 @@
                 </div>
                 <div class="option" id="periodDateOption">
                     Date:<br>
-                    <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate">
+                    <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate" autocomplete="off">
                 </div>
                 <div class="option" id="startDateOption">
                     Start date:<br>
-                    <input id="startDateTxt" type="text" style="width: 90px;" name="startDate">
+                    <input id="startDateTxt" type="text" style="width: 90px;" name="startDate" autocomplete="off">
                 </div>
                 <div class="option" id="endDateOption">
                     End date:<br>
-                    <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
+                    <input id="endDateTxt" type="text" style="width: 90px;" name="endDate" autocomplete="off">
                 </div>
                 <div class="option divider" id="authorDivider"></div>
                 <div class="option" id="newUserFilterOption">
@@ -62,7 +58,7 @@
                 </div>
                 <div class="option" id="authorOption">
                     Author:<br>
-                    <input id="authorTxt" type="text" style="width: 150px;" name="author">
+                    <input id="authorTxt" type="text" style="width: 150px;" name="author" autocomplete="off">
                 </div>
                 <div class="option" id="categoryOption">
                     Moderation flag:<br>
@@ -94,12 +90,12 @@
             <div id="chartContainer" style="display: none;"></div>
         </div>
 
-        <div id="footer">
+        <div id="footer" style="float: left; margin-top: 30px;">
             Source data:&nbsp;&nbsp;
         </div>
 
-        <p style="margin-top: 40px; text-align: right;">
-            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">CSV file documentation</a>
+        <p style="float: right; margin-top: 30px; text-align: right;">
+            &copy; 2016 <a href="https://github.com/electroly">Brian Luft</a>  <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats">GitHub project</a> <span class="bullet">&bull;</span> <a href="https://github.com/electroly/shackstats#data-files">Documentation</a>
         </p>
 
         <script src="ext/jquery.min.js"></script>
