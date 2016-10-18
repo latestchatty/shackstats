@@ -561,7 +561,7 @@ $(document).ready(function() {
         monthCmbs.forEach(function(monthCmb) {
             var monthCmbGroup = $("<optgroup label=\"" + year + "\">");
             for (var month = 1; month <= 12; month++) {
-                var m = moment(year + "-" + month + "-01");
+                var m = moment(new Date(year, month, 1));
                 monthCmbGroup.append(
                     $("<option value=\"" + m.format("YYYY-MM-DD") + "\">" + m.format("MMM 'YY") +"</option>")
                 );
@@ -686,10 +686,12 @@ function createGraphCanvas(dataset, chartInfo, options) {
         chartInstance.destroy();
     }
 
-    var canvas = $("<canvas id=\"graph\"></canvas>");
-    $("div#chartContainer").html("").append(canvas);
+    $("canvas").remove();
+    var canvas = $("<canvas id=\"graph\" width=\"960\" height=\"600\"></canvas>");
+    $("div#chartContainer").html("").css("display", "block").append(canvas);
+    canvas.css("display", "block");
 
-    chartInstance = new Chart(canvas, {
+    chartInstance = new Chart($("canvas#graph"), {
         type: "line",
         data: {
             datasets: [{
