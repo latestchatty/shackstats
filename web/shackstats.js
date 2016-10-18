@@ -360,6 +360,24 @@ function setOptions(args) {
 
 var lastSeenHash = window.location.hash;
 
+function updateHash() {
+    var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
+    var keys = _.filter(dataset.optionKeys, function(x) {
+        var value = options[x];
+        return value !== null && value.toString() !== "";
+    });
+    var pairs = _.map(keys, function(x) {
+        var value = options[x];
+        if (value instanceof Date) {
+            return x + "=" + moment(value).format("YYYY-MM-DD");
+        } else {
+            return x + "=" + encodeURIComponent(options[x]);
+        }
+    });
+    lastSeenHash = "#" + pairs.join("&");
+    location.replace("#" + pairs.join("&"));
+}
+
 function readOptionsFromForm() {
     function processInput(x) {
         if (x === null) {
@@ -381,15 +399,8 @@ function readOptionsFromForm() {
         category: processInput($("select#categoryCmb").val()),
         display: processInput($("select#displayCmb").val())
     };
-    var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
-    var keys = _.filter(dataset.optionKeys, function(x) {
-        var value = inputValues[x];
-        return value !== null && value.toString() !== "";
-    });
-    var pairs = _.map(keys, function(x) { return x + "=" + encodeURIComponent(inputValues[x]); });
-    lastSeenHash = "#" + pairs.join("&");
-    location.replace("#" + pairs.join("&"));
     setOptions(inputValues);
+    updateHash();
 }
 
 function readOptionsFromHash() {
@@ -474,6 +485,8 @@ function setFormFromOptions() {
     $("select#groupCmb").val(options.groupBy);
     $("select#periodTypeCmb").val(options.periodType);
     $("input#periodDateTxt").val(moment(options.periodDate).format("YYYY-MM-DD"));
+    $("select#periodDateMonthCmb").val(moment(options.periodDate).startOf("month").format("YYYY-MM-DD"));
+    $("select#periodDateYearCmb").val(moment(options.periodDate).startOf("year").format("YYYY-MM-DD"));
     $("input#startDateTxt").val(options.startDate === null ? "" : moment(options.startDate).format("YYYY-MM-DD"));
     $("input#endDateTxt").val(options.endDate === null ? "" : moment(options.endDate).format("YYYY-MM-DD"));
     $("input#authorTxt").val(options.author || "");
@@ -603,6 +616,19 @@ $(document).ready(function() {
                     doLoad();
                 }
             }, 0.5));
+    });
+
+    $("span#periodPrev").click(function() {
+        options.periodDate = moment(options.periodDate).add(-1, $("select#periodTypeCmb").val()).format("YYYY-MM-DD");
+        setFormFromOptions();
+        updateHash();
+        doLoad();
+    });
+    $("span#periodNext").click(function() {
+        options.periodDate = moment(options.periodDate).add(1, $("select#periodTypeCmb").val()).format("YYYY-MM-DD");
+        setFormFromOptions();
+        updateHash();
+        doLoad();
     });
 
     window.onhashchange = function() {

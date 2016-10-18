@@ -170,3 +170,7 @@ a.paginate_button.current {
     border: 1px solid #E0E0E0 !important;
     background: #FAFAFA !important;
 }
+span#periodPrev, span#periodNext {
+    color: #404040;
+    cursor: pointer;
+}
