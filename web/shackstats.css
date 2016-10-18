@@ -18,7 +18,7 @@ a {
 a:hover {
     text-decoration: underline;
 }
-div#loading, canvas#graph {
+div#loading, div#chartContainer {
     height: 600px;
 }
 div#graphContainer, div#options, div#datasetTitle, div#footer {
@@ -94,16 +94,23 @@ span.bullet {
 table#datatable {
     border-collapse: collapse;
     margin-bottom: 10px;
-    width: 400px !important;
+    width: 550px !important;
+    text-align: left;
+}
+table#datatable tbody tr td {
+    width: 50%;
 }
 table#datatable thead tr th {
     border: 1px solid #E0E0E0;
-    padding: 3px;
-    background: #FAFAFA;
+    padding: 5px;
+    padding-left: 10px;
+    background-color: #FAFAFA;
+    font-weight: normal;
 }
 table#datatable tbody tr td {
     border: 1px solid #E0E0E0;
-    padding: 3px;
+    padding: 2px;
+    padding-left: 10px;
 }
 table.dataTable.no-footer {
     border-bottom: 0;
@@ -130,4 +137,8 @@ span.download {
 span.download i {
     margin-right: 5px;
     color: black;
+}
+a.paginate_button.current {
+    border: 1px solid #E0E0E0 !important;
+    background: #FAFAFA !important;
 }

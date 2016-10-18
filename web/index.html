@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="shackstats.css">
     </head>
     <body>
-        <h1 style="display: inline-block;"><a href="?">ShackStats</a></h1>
+        <h1 style="display: inline-block;"><a href="/">ShackStats</a></h1>
 
         <h3 style="font-weight: normal; line-height: 150%; display: inline-block; margin-left: 50px;">
             <span id="datasetLinks"></span>
@@ -20,86 +20,78 @@
             &nbsp;
         </div>
 
-        <form method="GET" action="">
-            <input type="hidden" name="dataset" id="datasetField">
-            <div id="options">
-                <div id="optionsContainer">
-                    <div class="option" id="groupOption">
-                        Group by:<br>
-                        <select id="groupCmb" name="group">
-                            <option value="day">Day</option>
-                            <option value="week">Week</option>
-                            <option value="month">Month</option>
-                            <option value="year">Year</option>
-                        </select>
-                    </div>
-                    <div class="option" id="periodOption">
-                        Period:<br>
-                        <select id="periodTypeCmb" name="periodType">
-                            <option value="day">Day of</option>
-                            <option value="week">Week of</option>
-                            <option value="month">Month of</option>
-                            <option value="year">Year of</option>
-                        </select>
-                    </div>
-                    <div class="option" id="periodDateOption">
-                        Date:<br>
-                        <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate">
-                    </div>
-                    <div class="option" id="startDateOption">
-                        Start date:<br>
-                        <input id="startDateTxt" type="text" style="width: 90px;" name="startDate">
-                    </div>
-                    <div class="option" id="endDateOption">
-                        End date:<br>
-                        <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
-                    </div>
-                    <div class="option divider" id="authorDivider"></div>
-                    <div class="option" id="newUserFilterOption">
-                        User filter:<br>
-                        <select id="newUserFilterCmb" name="newUserFilter">
-                            <option value="10plus">10+ posts only</option>
-                            <option value="all">All new users</option>
-                        </select>
-                    </div>
-                    <div class="option" id="authorOption">
-                        Author:<br>
-                        <input id="authorTxt" type="text" style="width: 150px;" name="author">
-                    </div>
-                    <div class="option" id="categoryOption">
-                        Moderation flag:<br>
-                        <select id="categoryCmb" name="category">
-                            <option value="">&nbsp;</option>
-                            <option value="ontopic">On-topic</option>
-                            <option value="nws">Not work safe</option>
-                            <option value="stupid">Stupid</option>
-                            <option value="political">Political/religious</option>
-                            <option value="tangent">Tangent</option>
-                            <option value="informative">Informative</option>
-                        </select>
-                    </div>
-                    <div class="option divider alwaysShown" id="displayDivider"></div>
-                    <div class="option alwaysShown">
-                        Display as:<br>
-                        <select id="displayCmb" name="display">
-                            <option value="scatter" id="scatterChoice">Scatter plot</option>
-                            <option value="line" id="lineChoice">Line graph</option>
-                            <option value="table">Data table</option>
-                        </select>
-                    </div>
-                    <div class="option divider alwaysShown"></div>
-                    <div class="option alwaysShown" style="vertical-align: bottom;">
-                        <button style="height: 50px;">View</button>
-                    </div>
+        <div id="options">
+            <div id="optionsContainer">
+                <div class="option" id="groupOption">
+                    Group by:<br>
+                    <select id="groupCmb" name="group">
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month">Month</option>
+                        <option value="year">Year</option>
+                    </select>
+                </div>
+                <div class="option" id="periodOption">
+                    Period:<br>
+                    <select id="periodTypeCmb" name="periodType">
+                        <option value="day">Day of</option>
+                        <option value="week">Week of</option>
+                        <option value="month">Month of</option>
+                        <option value="year">Year of</option>
+                    </select>
+                </div>
+                <div class="option" id="periodDateOption">
+                    Date:<br>
+                    <input id="periodDateTxt" type="text" style="width: 90px;" name="periodDate">
+                </div>
+                <div class="option" id="startDateOption">
+                    Start date:<br>
+                    <input id="startDateTxt" type="text" style="width: 90px;" name="startDate">
+                </div>
+                <div class="option" id="endDateOption">
+                    End date:<br>
+                    <input id="endDateTxt" type="text" style="width: 90px;" name="endDate">
+                </div>
+                <div class="option divider" id="authorDivider"></div>
+                <div class="option" id="newUserFilterOption">
+                    User filter:<br>
+                    <select id="newUserFilterCmb" name="newUserFilter">
+                        <option value="10plus">10+ posts only</option>
+                        <option value="all">All new users</option>
+                    </select>
+                </div>
+                <div class="option" id="authorOption">
+                    Author:<br>
+                    <input id="authorTxt" type="text" style="width: 150px;" name="author">
+                </div>
+                <div class="option" id="categoryOption">
+                    Moderation flag:<br>
+                    <select id="categoryCmb" name="category">
+                        <option value="">&nbsp;</option>
+                        <option value="ontopic">On-topic</option>
+                        <option value="nws">Not work safe</option>
+                        <option value="stupid">Stupid</option>
+                        <option value="political">Political/religious</option>
+                        <option value="tangent">Tangent</option>
+                        <option value="informative">Informative</option>
+                    </select>
+                </div>
+                <div class="option divider alwaysShown" id="displayDivider"></div>
+                <div class="option alwaysShown">
+                    Display as:<br>
+                    <select id="displayCmb" name="display">
+                        <option value="scatter" id="scatterChoice">Scatter plot</option>
+                        <option value="line" id="lineChoice">Line graph</option>
+                        <option value="table">Data table</option>
+                    </select>
                 </div>
             </div>
-        </form>
+        </div>
 
         <div id="graphContainer">
             <div id="loading">Loading...</div>
-            <div id="datatableTitle" style="display:  none;"></div>
-            <table id="datatable"></table>
-            <canvas id="graph" style="display: none;"></canvas>
+            <div id="datatableContainer" style="display: none;"></div>
+            <div id="chartContainer" style="display: none;"></div>
         </div>
 
         <div id="footer">
@@ -119,15 +111,13 @@
         <script src="ext/lodash.min.js"></script>
         <script src="shackstats.js"></script>
 
-        <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-        ga('create', 'UA-1952492-4', 'auto');
-        ga('send', 'pageview');
-
-        </script>        
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-1952492-4', 'auto');
+ga('send', 'pageview');
+</script>        
     </body>
 </html>

@@ -30,7 +30,7 @@
     "aws-sdk": "^2.6.7",
     "babyparse": "^0.4.6",
     "bluebird": "^3.4.6",
-    "chart.js": "2.1.0",
+    "chart.js": "^2.3.0",
     "datatables.net": "^1.10.12",
     "datatables.net-dt": "^1.10.12",
     "font-awesome": "^4.6.3",
