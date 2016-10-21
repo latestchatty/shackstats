@@ -519,6 +519,7 @@ function getAllPeriods(): { noun: string, filenameSuffix: string, date: string }
 }
 
 // post_counts_by_user_for_(day|week|month|year)_(YYYYMMDD).csv
+// post_counts_by_user_overall.csv
 async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Dictionary<string, string>): Promise<void> {
     const filenames = new Dictionary<string, boolean>();
 
@@ -527,7 +528,10 @@ async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Diction
             return;
         }
 
-        const filename = `post_counts_by_user_for_${periodNoun}_${moment(date).format("YYYYMMDD")}.csv`;
+        const filename =
+            periodNoun === "overall"
+            ? "post_counts_by_user_overall.csv"
+            : `post_counts_by_user_for_${periodNoun}_${moment(date).format("YYYYMMDD")}.csv`;
         filenames.add(filename, true);
         await writeCsvFile(config, filename, dateRows,
             ["period", "date", "user_id", "total_post_count", "ontopic_post_count", "nws_post_count",
@@ -564,7 +568,8 @@ async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Diction
         { rows: new Dictionary<string, any>(), date: "", noun: "day" },
         { rows: new Dictionary<string, any>(), date: "", noun: "week" },
         { rows: new Dictionary<string, any>(), date: "", noun: "month" },
-        { rows: new Dictionary<string, any>(), date: "", noun: "year" }
+        { rows: new Dictionary<string, any>(), date: "", noun: "year" },
+        { rows: new Dictionary<string, any>(), date: "", noun: "overall" }
     ];
 
     await pgQueryCursor(config,
@@ -583,7 +588,10 @@ async function buildPeriodUserPostCountsFiles(config: Config, userIdMap: Diction
             for (let i = 0; i < currentPeriods.length; i++) {
                 const period = currentPeriods[i];
 
-                const newPeriodDate = moment(dateStr).startOf(<any>period.noun).format("YYYY-MM-DD"); 
+                const newPeriodDate = 
+                    period.noun === "overall"
+                    ? "1990-01-01"
+                    : moment(dateStr).startOf(<any>period.noun).format("YYYY-MM-DD"); 
                 if (newPeriodDate !== period.date) {
                     await writeDateFile(period.noun, period.rows.keys().sort().map(x => period.rows.get(x)), period.date);
                     period.rows.clear();

@@ -52,6 +52,15 @@ function parseGroup(x) {
     }
 }
 
+function parsePeriodType(x) {
+    switch (x) {
+        case "overall":
+            return x;
+        default:
+            return parseGroup(x);
+    }
+}
+
 function parseDate(x) {
     if (x === null) {
         return null;
@@ -188,6 +197,9 @@ var datasets = [
         ],
         defaultDisplay: "table",
         getCsvFilename: function() {
+            if (options.periodType === "overall") {
+                return resolveP("post_counts_by_user_overall.csv");
+            }
             var periodStartDate = moment(options.periodDate).startOf(options.periodType).format("YYYYMMDD");
             var filename = "post_counts_by_user_for_" + options.periodType + "_" + periodStartDate + ".csv";  
             return resolveP(filename);
@@ -206,7 +218,10 @@ var datasets = [
             var periodStartDate = moment(options.periodDate).startOf(options.periodType).format(dateFormat);
             var titleCategoryPart = options.category === null ? "" : "\"" + options.category + "\" ";
             return resolveP({
-                chartTitle: "Top " + titleCategoryPart + "posters for " + options.periodType + " of " + periodStartDate,
+                chartTitle:
+                    options.periodType === "overall"
+                    ? "Top " + titleCategoryPart + "posters overall"
+                    : "Top " + titleCategoryPart + "posters for " + options.periodType + " of " + periodStartDate,
                 xAxisLabel: "User",
                 yAxisLabel: "Number of posts",
                 values: orderedPoints
@@ -345,7 +360,7 @@ function setOptions(args) {
     options.dataset = parseDataset(args.dataset) || "topPosters";
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     options.groupBy = parseGroup(args.groupBy) || "month";
-    options.periodType = parseGroup(args.periodType) || "month";
+    options.periodType = parsePeriodType(args.periodType) || "month";
     options.periodDate = parseDate(args.periodDate) || moment().add(-1, "day").startOf("day").toDate();
     options.startDate = parseDate(args.startDate);
     options.endDate = parseDate(args.endDate);
@@ -363,6 +378,10 @@ var lastSeenHash = window.location.hash;
 function updateHash() {
     var dataset = datasets.filter(function(x) { return x.name == options.dataset; })[0];
     var keys = _.filter(dataset.optionKeys, function(x) {
+        // special case: when periodType is "overall", there's no need for a periodDate
+        if (x === "periodDate" && options.periodType === "overall") {
+            return false;
+        }
         var value = options[x];
         return value !== null && value.toString() !== "";
     });
@@ -499,6 +518,7 @@ function onPeriodTypeChange() {
     var periodTypeCmb = $("select#periodTypeCmb");
     var t = periodTypeCmb.val();
     var d = $("input#periodDateTxt").val(); 
+    $("div#periodDateOption").css("display", t === "overall" ? "none" : "table-cell");
     $("input#periodDateTxt").css("display", (t === "day" || t === "week") ? "inline-block" : "none");
     $("select#periodDateMonthCmb")
         .css("display", t === "month" ? "inline-block" : "none")
@@ -561,7 +581,7 @@ $(document).ready(function() {
         monthCmbs.forEach(function(monthCmb) {
             var monthCmbGroup = $("<optgroup label=\"" + year + "\">");
             for (var month = 1; month <= 12; month++) {
-                var m = moment(new Date(year, month, 1));
+                var m = moment(new Date(year, month - 1, 1)); // js date constructor uses 0-based month index
                 monthCmbGroup.append(
                     $("<option value=\"" + m.format("YYYY-MM-DD") + "\">" + m.format("MMM 'YY") +"</option>")
                 );
